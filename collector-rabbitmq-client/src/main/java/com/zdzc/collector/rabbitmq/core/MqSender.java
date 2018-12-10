@@ -12,11 +12,7 @@ public class MqSender {
 
     private static final Logger logger = LoggerFactory.getLogger(MqSender.class);
 
-    public MqSender(){
-
-    }
-
-    public void send(Channel channel, Message message, String queueName){
+    public static void send(Channel channel, Message message, String queueName){
         try {
             channel.basicPublish("", queueName, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getSendBody());
         } catch (IOException e) {

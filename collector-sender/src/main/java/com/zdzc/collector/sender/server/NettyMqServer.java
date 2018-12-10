@@ -1,7 +1,5 @@
 package com.zdzc.collector.sender.server;
 
-import com.zdzc.collector.common.jfinal.P;
-import com.zdzc.collector.rabbitmq.core.MqSender;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -22,12 +20,9 @@ public class NettyMqServer {
 
     private Channel serverChannel;
 
-    private MqSender mqSender;
-
     public NettyMqServer() {
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
-        mqSender = new MqSender();
     }
 
     private void start(int port) {
@@ -36,7 +31,7 @@ public class NettyMqServer {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new NettyMqServerChannelInitializer(mqSender));
+                    .childHandler(new NettyMqServerChannelInitializer());
             b.option(ChannelOption.SO_BACKLOG, 128);
             b.childOption(ChannelOption.SO_KEEPALIVE, false);
             b.childOption(ChannelOption.TCP_NODELAY, true);
@@ -53,25 +48,6 @@ public class NettyMqServer {
             stop();
         }
     }
-
-    /*private void startMqListener() {
-        // Not familiar with Spring AMQP, don't know how to Manually ack to the
-        // MQ server if one message is consumed.
-        // Problem: If ack-mode is Automatic, The message will be lost if you
-        // want some control
-        *//*
-         * @SuppressWarnings("resource") ApplicationContext applicationContext =
-         * new FileSystemXmlApplicationContext( "classpath:rmqConfig.xml");
-         * MqListener mqListener = (MqListener)
-         * applicationContext.getBean("messageListener");
-         *//*
-
-        // Another way to start a MQ listener, just use the rabbit mq java
-        // client API
-        // Manually ack to MQ server if one message is consumed.
-        MqReceiver mqReceiver = new MqReceiver();
-        mqReceiver.start();
-    }*/
 
     private void stop() {
         if (serverChannel != null) {

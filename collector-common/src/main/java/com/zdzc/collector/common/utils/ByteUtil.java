@@ -1,6 +1,7 @@
 package com.zdzc.collector.common.utils;
 
 import io.netty.util.CharsetUtil;
+import org.apache.commons.lang.StringUtils;
 
 public class ByteUtil {
 
@@ -194,19 +195,48 @@ public class ByteUtil {
 
 
     /**
-     * 字节数组转16进制
-     * @param bytes 需要转换的byte数组
-     * @return  转换后的Hex字符串
+     * To byte array byte [ ].
+     *
+     * @param hexString the hex string
+     * @return the byte [ ]
      */
-    public static String bytesToHex(byte[] bytes) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(bytes[i] & 0xFF);
-            if (hex.length() < 2) {
-                sb.append(0);
-            }
-            sb.append(hex);
+    public static byte[] hexToByteArray(String hexString) {
+        if (StringUtils.isEmpty(hexString))
+            return null;
+        hexString = hexString.toLowerCase();
+        final byte[] byteArray = new byte[hexString.length() >> 1];
+        int index = 0;
+        for (int i = 0; i < hexString.length(); i++) {
+            if (index  > hexString.length() - 1)
+                return byteArray;
+            byte highDit = (byte) (Character.digit(hexString.charAt(index), 16) & 0xFF);
+            byte lowDit = (byte) (Character.digit(hexString.charAt(index + 1), 16) & 0xFF);
+            byteArray[i] = (byte) (highDit << 4 | lowDit);
+            index += 2;
         }
-        return sb.toString();
+        return byteArray;
+    }
+
+
+    /**
+     * byte[] to Hex string.
+     *
+     * @param byteArray the byte array
+     * @return the string
+     */
+
+    public static String bytesToHexString(byte[] byteArray) {
+        final StringBuilder hexString = new StringBuilder("");
+        if (byteArray == null || byteArray.length <= 0)
+            return null;
+        for (int i = 0; i < byteArray.length; i++) {
+            int v = byteArray[i] & 0xFF;
+            String hv = Integer.toHexString(v);
+            if (hv.length() < 2) {
+                hexString.append(0);
+            }
+            hexString.append(hv);
+        }
+        return hexString.toString().toLowerCase();
     }
 }
