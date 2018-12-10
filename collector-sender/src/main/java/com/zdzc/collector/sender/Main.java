@@ -1,3 +1,5 @@
+package com.zdzc.collector.sender;
+
 import com.zdzc.collector.common.jfinal.P;
 import com.zdzc.collector.rabbitmq.init.MqInitializer;
 import com.zdzc.collector.sender.server.NettyMqServer;

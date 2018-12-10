@@ -8,7 +8,6 @@ import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Header;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.common.utils.ByteUtil;
-import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,6 @@ public class ToJtMessageDecoder {
      */
     public static Message decode(byte[] data){
         String hexStr = StringUtil.toHexStringPadded(data);
-        logger.info("source data -> "+hexStr);
         byte[] bs = MsgDecoder.doReceiveEscape(data);
         String hex = StringUtil.toHexStringPadded(bs);
         Boolean isValid = MsgDecoder.validateChecksum(bs);
