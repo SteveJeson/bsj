@@ -2,6 +2,7 @@ package com.zdzc.collector.sender.handler;
 
 import com.rabbitmq.client.Channel;
 import com.zdzc.collector.common.jconst.Command;
+import com.zdzc.collector.common.jconst.SysConst;
 import com.zdzc.collector.common.jenum.DataType;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Message;
@@ -34,7 +35,7 @@ public class WrtMessageHandler {
 
     public static void handler(ChannelHandlerContext ctx, Message message) throws Exception {
         //TODO 待验证
-        String channelId = ctx.channel().id().asLongText();
+        String channelId = ctx.channel().id().toString();
         if(!message.getStick()){
             //给客户端发送应答消息
             if(message.getReplyBody() != null){
@@ -49,11 +50,11 @@ public class WrtMessageHandler {
                 String terminalPhone = message.getHeader().getTerminalPhone();
                 if(!channelMap.containsKey(terminalPhone)){
                     channelMap.put(terminalPhone, channelId);
-                    logger.info("saved key value {}:{}", terminalPhone, channelId);
+                    logger.info("saved key value -> {} : {}", terminalPhone, channelId);
                 }
                 if(!channelMap.containsKey(channelId)){
                     channelMap.put(channelId, terminalPhone);
-                    logger.info("saved key value {}:{}", channelId, terminalPhone);
+                    logger.info("saved key value -> {} : {}", channelId, terminalPhone);
                 }
                 return;
             }
@@ -96,36 +97,36 @@ public class WrtMessageHandler {
             CopyOnWriteArrayList<Channel> channels = MqInitializer.wrtGpsChannels;
             channel = channels.get(gpsNum.intValue() % channels.size());
             queueName = MqInitializer.wrtGpsQueuePrefix + (gpsNum.intValue() % MqInitializer.wrtGpsQueueCount + 1);
-            String body = new String(message.getBody(), "UTF-8");
+            String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
-            message.setSendBody(sendMsg.getBytes(Charset.forName("UTF-8")));
+            message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
         }else if (msgType == DataType.ALARM.getValue()){
             //报警
             alarmNum.incrementAndGet();
             CopyOnWriteArrayList<Channel> channels = MqInitializer.wrtAlarmChannels;
             channel = channels.get(alarmNum.intValue() % channels.size());
             queueName = MqInitializer.wrtAlarmQueuePrefix + (alarmNum.intValue() % MqInitializer.wrtAlarmQueueCount + 1);
-            String body = new String(message.getBody(), "UTF-8");
+            String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
-            message.setSendBody(sendMsg.getBytes(Charset.forName("UTF-8")));
+            message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
         }else if (msgType == DataType.HEARTBEAT.getValue()){
             //心跳
             heartbeatNum.incrementAndGet();
             CopyOnWriteArrayList<Channel> channels = MqInitializer.wrtHeartbeatChannels;
             channel = channels.get(heartbeatNum.intValue() % channels.size());
             queueName = MqInitializer.wrtHeartbeatQueuePrefix + (heartbeatNum.intValue() % MqInitializer.wrtHeartbeatQueueCount + 1);
-            String body = new String(message.getBody(), "UTF-8");
+            String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
-            message.setSendBody(sendMsg.getBytes(Charset.forName("UTF-8")));
+            message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
         }else if (msgType == DataType.CONTROLLER.getValue()){
             //控制器
             controllerNum.incrementAndGet();
             CopyOnWriteArrayList<Channel> channels = MqInitializer.wrtControllerChannels;
             channel = channels.get(controllerNum.intValue() % channels.size());
             queueName = MqInitializer.wrtControllerQueuePrefix + (controllerNum.intValue() % MqInitializer.wrtControllerQueueCount + 1);
-            String body = new String(message.getBody(), "UTF-8");
+            String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
-            message.setSendBody(sendMsg.getBytes(Charset.forName("UTF-8")));
+            message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
         }
         MqSender.send(channel, message, queueName);
     }
