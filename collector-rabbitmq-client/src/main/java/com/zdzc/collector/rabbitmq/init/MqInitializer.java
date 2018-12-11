@@ -4,7 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.zdzc.collector.common.jenum.ProtocolType;
-import com.zdzc.collector.common.jfinal.P;
+import com.zdzc.collector.common.jfinal.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,101 +12,106 @@ import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * @Author liuwei
+ * @Description MQ初始化类
+ * @Date 2018/12/11 15:43
+ */
 public class MqInitializer {
 
-    public static String hostname = P.get("mq.server.hostname");
+    public static String hostname = Config.get("mq.server.hostname");
 
-    public static String username = P.get("mq.server.username");
+    public static String username = Config.get("mq.server.username");
 
-    public static String password = P.get("mq.server.password");
+    public static String password = Config.get("mq.server.password");
 
-    public static int port = P.getInt("mq.server.port");
+    public static int port = Config.getInt("mq.server.port");
 
-    public static int interval = P.getInt("mq.server.net.interval");
+    public static int interval = Config.getInt("mq.server.net.interval");
 
-    public static String protocolType = P.get("protocol.type");
+    public static String protocolType = Config.get("protocol.type");
 
-    public static int gpsConnCount = P.getInt("gps.connection.count");
+    public static int gpsConnCount = Config.getInt("gps.connection.count");
 
-    public static int wrtGpsConnCount = P.getInt("wrt.gps.connection.count", 0);
+    public static int wrtGpsConnCount = Config.getInt("wrt.gps.connection.count", 0);
 
-    public static int gpsChannelCount = P.getInt("gps.channel.count");
+    public static int gpsChannelCount = Config.getInt("gps.channel.count");
 
-    public static int wrtGpsChannelCount = P.getInt("wrt.gps.channel.count", 0);
+    public static int wrtGpsChannelCount = Config.getInt("wrt.gps.channel.count", 0);
 
-    public static String gpsQueuePrefix = P.get("gps.queue.prefix");
+    public static String gpsQueuePrefix = Config.get("gps.queue.prefix");
 
-    public static String wrtGpsQueuePrefix = P.get("wrt.gps.queue.prefix");
+    public static String wrtGpsQueuePrefix = Config.get("wrt.gps.queue.prefix");
 
-    public static int gpsQueueCount = P.getInt("gps.queue.count");
+    public static int gpsQueueCount = Config.getInt("gps.queue.count");
 
-    public static int wrtGpsQueueCount = P.getInt("wrt.gps.queue.count",0);
+    public static int wrtGpsQueueCount = Config.getInt("wrt.gps.queue.count",0);
 
-    public static int gpsQueueStart = P.getInt("gps.queue.start");
+    public static int gpsQueueStart = Config.getInt("gps.queue.start");
 
-    public static int wrtGpsQueueStart = P.getInt("wrt.gps.queue.start", 0);
+    public static int wrtGpsQueueStart = Config.getInt("wrt.gps.queue.start", 0);
 
-    public static int alarmConnCount = P.getInt("alarm.connection.count");
+    public static int alarmConnCount = Config.getInt("alarm.connection.count");
 
-    public static int wrtAlarmConnCount = P.getInt("wrt.alarm.connection.count", 0);
+    public static int wrtAlarmConnCount = Config.getInt("wrt.alarm.connection.count", 0);
 
-    public static int alarmChannelCount = P.getInt("alarm.channel.count");
+    public static int alarmChannelCount = Config.getInt("alarm.channel.count");
 
-    public static int wrtAlarmChannelCount = P.getInt("wrt.alarm.channel.count", 0);
+    public static int wrtAlarmChannelCount = Config.getInt("wrt.alarm.channel.count", 0);
 
-    public static String alarmQueuePrefix = P.get("alarm.queue.prefix");
+    public static String alarmQueuePrefix = Config.get("alarm.queue.prefix");
 
-    public static String wrtAlarmQueuePrefix = P.get("wrt.alarm.queue.prefix");
+    public static String wrtAlarmQueuePrefix = Config.get("wrt.alarm.queue.prefix");
 
-    public static int alarmQueueCount = P.getInt("alarm.queue.count");
+    public static int alarmQueueCount = Config.getInt("alarm.queue.count");
 
-    public static int wrtAlarmQueueCount = P.getInt("wrt.alarm.queue.count", 0);
+    public static int wrtAlarmQueueCount = Config.getInt("wrt.alarm.queue.count", 0);
 
-    public static int alarmQueueStart = P.getInt("alarm.queue.start");
+    public static int alarmQueueStart = Config.getInt("alarm.queue.start");
 
-    public static int wrtAlarmQueueStart = P.getInt("wrt.alarm.queue.start", 0);
+    public static int wrtAlarmQueueStart = Config.getInt("wrt.alarm.queue.start", 0);
 
-    public static int heartbeatConnCount = P.getInt("heartbeat.connection.count");
+    public static int heartbeatConnCount = Config.getInt("heartbeat.connection.count");
 
-    public static int wrtHeartbeatConnCount = P.getInt("wrt.heartbeat.connection.count", 0);
+    public static int wrtHeartbeatConnCount = Config.getInt("wrt.heartbeat.connection.count", 0);
 
-    public static int heartbeatChannelCount = P.getInt("heartbeat.channel.count");
+    public static int heartbeatChannelCount = Config.getInt("heartbeat.channel.count");
 
-    public static int wrtHeartbeatChannelCount = P.getInt("wrt.heartbeat.channel.count", 0);
+    public static int wrtHeartbeatChannelCount = Config.getInt("wrt.heartbeat.channel.count", 0);
 
-    public static String heartbeatQueuePrefix = P.get("heartbeat.queue.prefix");
+    public static String heartbeatQueuePrefix = Config.get("heartbeat.queue.prefix");
 
-    public static String wrtHeartbeatQueuePrefix = P.get("wrt.heartbeat.queue.prefix");
+    public static String wrtHeartbeatQueuePrefix = Config.get("wrt.heartbeat.queue.prefix");
 
-    public static int heartbeatQueueCount = P.getInt("heartbeat.queue.count");
+    public static int heartbeatQueueCount = Config.getInt("heartbeat.queue.count");
 
-    public static int wrtHeartbeatQueueCount = P.getInt("wrt.heartbeat.queue.count", 0);
+    public static int wrtHeartbeatQueueCount = Config.getInt("wrt.heartbeat.queue.count", 0);
 
-    public static int heartbeatQueueStart = P.getInt("heartbeat.queue.start");
+    public static int heartbeatQueueStart = Config.getInt("heartbeat.queue.start");
 
-    public static int wrtHeartbeatQueueStart = P.getInt("wrt.heartbeat.queue.start", 0);
+    public static int wrtHeartbeatQueueStart = Config.getInt("wrt.heartbeat.queue.start", 0);
 
-    public static int businessConnCount = P.getInt("business.connection.count");
+    public static int businessConnCount = Config.getInt("business.connection.count");
 
-    public static int businessChannelCount = P.getInt("business.channel.count");
+    public static int businessChannelCount = Config.getInt("business.channel.count");
 
-    public static String businessQueuePrefix = P.get("business.queue.prefix");
+    public static String businessQueuePrefix = Config.get("business.queue.prefix");
 
-    public static int businessQueueCount = P.getInt("business.queue.count");
+    public static int businessQueueCount = Config.getInt("business.queue.count");
 
-    public static int businessQueueStart = P.getInt("business.queue.start");
+    public static int businessQueueStart = Config.getInt("business.queue.start");
 
-    public static int wrtControllerConnCount = P.getInt("wrt.controller.connection.count", 0);
+    public static int wrtControllerConnCount = Config.getInt("wrt.controller.connection.count", 0);
 
-    public static int wrtControllerChannelCount = P.getInt("wrt.controller.channel.count", 0);
+    public static int wrtControllerChannelCount = Config.getInt("wrt.controller.channel.count", 0);
 
-    public static String wrtControllerQueuePrefix = P.get("wrt.controller.queue.prefix");
+    public static String wrtControllerQueuePrefix = Config.get("wrt.controller.queue.prefix");
 
-    public static int wrtControllerQueueCount = P.getInt("wrt.controller.queue.count", 0);
+    public static int wrtControllerQueueCount = Config.getInt("wrt.controller.queue.count", 0);
 
-    public static int wrtControllerQueueStart = P.getInt("wrt.controller.queue.start", 0);
+    public static int wrtControllerQueueStart = Config.getInt("wrt.controller.queue.start", 0);
 
-    public static String wrtCmdReplyQueueName = P.get("wrt.command.queue.reply.name");
+    public static String wrtCmdReplyQueueName = Config.get("wrt.command.queue.reply.name");
 
     public static ConnectionFactory factory;
 
@@ -224,18 +229,18 @@ public class MqInitializer {
 
     /**通过规则创建消息队列
      * @param connection 连接对象
-     * @param QueuePrefix 队列前缀
+     * @param queuePrefix 队列前缀
      * @param channelCount 通道数量
      * @param queueCount 队列数量
      * @param queueStart 队列起始数
      * @param channels 通道集合
      */
-    public static void createQueues(Connection connection, String QueuePrefix, int channelCount, int queueCount, int queueStart, CopyOnWriteArrayList<Channel> channels){
+    public static void createQueues(Connection connection, String queuePrefix, int channelCount, int queueCount, int queueStart, CopyOnWriteArrayList<Channel> channels){
         for(int i = 0;i < channelCount;i++){
             try {
                 Channel channel = connection.createChannel();
                 for(int j = 0;j < queueCount;j++){
-                    String queueName = QueuePrefix + (queueStart + j);
+                    String queueName = queuePrefix + (queueStart + j);
                     channel.queueDeclare(queueName,true,false,false,null);
                 }
                channels.add(channel);

@@ -18,6 +18,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @Author liuwei
+ * @Description 消息解析类
+ * @Date 2018/12/11 15:50
+ */
 public class ToMessageDecoder extends MessageToMessageDecoder {
 
     private static final Logger logger = LoggerFactory.getLogger(ToMessageDecoder.class);

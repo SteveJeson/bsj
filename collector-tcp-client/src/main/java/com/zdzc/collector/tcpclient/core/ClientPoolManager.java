@@ -12,6 +12,11 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * @Author liuwei
+ * @Description TCP客户端连接池管理类
+ * @Date 2018/12/11 15:13
+ */
 public class ClientPoolManager {
 
     public static FixedChannelPool channelPool;
@@ -23,7 +28,7 @@ public class ClientPoolManager {
         Bootstrap bootstrap = new Bootstrap();
 
         // 连接池每次初始化一个连接的时候都会根据这个值去连接服务器
-        InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved(remoteHost, remotePort);// 连接地址
+        InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved(remoteHost, remotePort);
         bootstrap.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
                 .remoteAddress(remoteAddress);
 

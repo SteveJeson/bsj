@@ -1,8 +1,14 @@
 package com.zdzc.collector.common.utils;
 
+import com.zdzc.collector.common.jconst.SysConst;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * @Author liuwei
+ * @Description 字节处理工具类
+ * @Date 2018/12/11 14:43
+ */
 public class ByteUtil {
 
     /**
@@ -19,26 +25,27 @@ public class ByteUtil {
     }
 
     /**
-     * 将byte类型转化为int类型
-     * @param value
+     * 单个字节转int类型
+     * @author liuwei
      * @return
+     * @exception
+     * @date 2018/12/11 15:05
      */
-    public static int byteToInteger(byte[] value)
-    {
+    public static int byteToInteger(byte[] value) {
         int result;
-        if (value.length == 1)
+        if (value.length == SysConst.FIGURE_ONE)
         {
             result = oneByteToInteger(value[0]);
         }
-        else if (value.length == 2)
+        else if (value.length == SysConst.FIGURE_TWO)
         {
             result = twoBytesToInteger(value);
         }
-        else if (value.length == 3)
+        else if (value.length == SysConst.FIGURE_THREE)
         {
             result = threeBytesToInteger(value);
         }
-        else if (value.length == 4)
+        else if (value.length == SysConst.FIGURE_FOUR)
         {
             result = fourBytesToInteger(value);
         }
@@ -65,8 +72,7 @@ public class ByteUtil {
      * @param value
      * @return
      */
-    public static int twoBytesToInteger(byte[] value)
-    {
+    public static int twoBytesToInteger(byte[] value) {
         int temp0 = value[0] & 0xFF;
         int temp1 = value[1] & 0xFF;
         return ((temp0 << 8) + temp1);
@@ -77,8 +83,7 @@ public class ByteUtil {
      * @param value
      * @return
      */
-    public static int threeBytesToInteger(byte[] value)
-    {
+    public static int threeBytesToInteger(byte[] value) {
         int temp0 = value[0] & 0xFF;
         int temp1 = value[1] & 0xFF;
         int temp2 = value[2] & 0xFF;
@@ -90,8 +95,7 @@ public class ByteUtil {
      * @param value
      * @return
      */
-    public static int fourBytesToInteger(byte[] value)
-    {
+    public static int fourBytesToInteger(byte[] value) {
         int temp0 = value[0] & 0xFF;
         int temp1 = value[1] & 0xFF;
         int temp2 = value[2] & 0xFF;
@@ -119,8 +123,7 @@ public class ByteUtil {
      * @return
      * @throws Exception
      */
-    public static byte[] integerTo1Bytes(int value)
-    {
+    public static byte[] integerTo1Bytes(int value) {
         byte[] result = new byte[1];
         result[0] = (byte)(value & 0xFF);
         return result;
@@ -133,8 +136,7 @@ public class ByteUtil {
      * @return
      * @throws Exception
      */
-    public static byte[] integerTo2Bytes(int value)
-    {
+    public static byte[] integerTo2Bytes(int value) {
         byte[] result = new byte[2];
         result[0] = (byte)((value >> 8) & 0xFF);
         result[1] = (byte)(value & 0xFF);
@@ -147,10 +149,9 @@ public class ByteUtil {
      * @param str
      * @return BCD字节数组
      */
-    public static byte[] string2Bcd(String str)
-    {
+    public static byte[] string2Bcd(String str) {
         // 奇数,前补零
-        if ((str.length() & 0x1) == 1)
+        if ((str.length() & SysConst.FIGURE_HEX_ONE) == 1)
         {
             str = "0" + str;
         }
@@ -168,16 +169,19 @@ public class ByteUtil {
         return ret;
     }
 
-    private static byte ascII2Bcd(byte asc)
-    {
-        if ((asc >= '0') && (asc <= '9'))
+    private static byte ascII2Bcd(byte asc) {
+        if ((asc >= SysConst.CHAR_ZERO) && (asc <= SysConst.CHAR_NINE)){
             return (byte)(asc - '0');
-        else if ((asc >= 'A') && (asc <= 'F'))
+        }
+        else if ((asc >= SysConst.LETTER_UPPERCASE_A) && (asc <= SysConst.LETTER_UPPERCASE_F)){
             return (byte)(asc - 'A' + 10);
-        else if ((asc >= 'a') && (asc <= 'f'))
+        }
+        else if ((asc >= SysConst.LETTER_LOWERCASE_A) && (asc <= SysConst.LETTER_LOWERCASE_F)){
             return (byte)(asc - 'a' + 10);
-        else
+        }
+        else{
             return (byte)(asc - 48);
+        }
     }
 
     /**
@@ -201,14 +205,16 @@ public class ByteUtil {
      * @return the byte [ ]
      */
     public static byte[] hexToByteArray(String hexString) {
-        if (StringUtils.isEmpty(hexString))
+        if (StringUtils.isEmpty(hexString)){
             return null;
+        }
         hexString = hexString.toLowerCase();
         final byte[] byteArray = new byte[hexString.length() >> 1];
         int index = 0;
         for (int i = 0; i < hexString.length(); i++) {
-            if (index  > hexString.length() - 1)
+            if (index  > hexString.length() - 1){
                 return byteArray;
+            }
             byte highDit = (byte) (Character.digit(hexString.charAt(index), 16) & 0xFF);
             byte lowDit = (byte) (Character.digit(hexString.charAt(index + 1), 16) & 0xFF);
             byteArray[i] = (byte) (highDit << 4 | lowDit);
@@ -226,9 +232,10 @@ public class ByteUtil {
      */
 
     public static String bytesToHexString(byte[] byteArray) {
-        final StringBuilder hexString = new StringBuilder("");
-        if (byteArray == null || byteArray.length <= 0)
+        final StringBuilder hexString = new StringBuilder();
+        if (byteArray == null || byteArray.length <= 0){
             return null;
+        }
         for (int i = 0; i < byteArray.length; i++) {
             int v = byteArray[i] & 0xFF;
             String hv = Integer.toHexString(v);

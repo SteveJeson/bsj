@@ -4,6 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * @Author liuwei
+ * @Description 通用消息解码类
+ * @Date 2018/12/11 15:44
+ */
 public class MsgDecoder {
 
     /**

@@ -11,5 +11,12 @@
 
     <artifactId>collector-http-server</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.zdzc</groupId>
+            <artifactId>collector-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 </project>

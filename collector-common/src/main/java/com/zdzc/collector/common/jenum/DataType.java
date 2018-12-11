@@ -1,14 +1,48 @@
 package com.zdzc.collector.common.jenum;
 
 /**
- * 数据类型
+ * @Author liuwei
+ * @Description 数据类型
+ * @Date 2018/12/11 15:26
  */
 public enum DataType {
-    GPS(1, "终端定位"), ALARM(2, "终端报警"), HEARTBEAT(3, "终端心跳"),
-    Registry(4, "终端注册"), Authentication(5, "终端鉴权"), Property(6, "终端属性"), BUSINESS(7, "报警业务"),
-    CONTROLLER(8, "控制器");
+    /**
+     * 终端定位数据
+     */
+    GPS(1, "终端定位"),
+
+    /**
+     * 终端报警数据
+     */
+    ALARM(2, "终端报警"),
+
+    /**
+     * 终端心跳数据
+     */
+    HEARTBEAT(3, "终端心跳"),
+
+    /**
+     * 终端注册数据
+     */
+    Registry(4, "终端注册"),
+
+    /**
+     * 终端鉴权数据
+     */
+    Authentication(5, "终端鉴权"),
+
+    /**
+     * 终端属性数据
+     */
+    Property(6, "终端属性"),
+
+    /**
+     * 控制器数据
+     */
+    CONTROLLER(7, "控制器");
 
     private int value;
+
     private String desc;
 
     DataType(int value, String desc) {

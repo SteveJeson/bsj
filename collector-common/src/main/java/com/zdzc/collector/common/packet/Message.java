@@ -1,5 +1,10 @@
 package com.zdzc.collector.common.packet;
 
+/**
+ * @Author liuwei
+ * @Description 消息体实体类
+ * @Date 2018/12/11 15:39
+ */
 public class Message {
 
 

@@ -7,6 +7,11 @@ import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @Author liuwei
+ * @Description TCP服务端心跳处理类
+ * @Date 2018/12/11 15:31 
+ */
 public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
     private static final Logger log = LoggerFactory
             .getLogger(HeartBeatHandler.class);
@@ -23,7 +28,6 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                         + ctx.channel().remoteAddress());
             } else if (event.state() == IdleState.WRITER_IDLE) {
                 log.info("--- Write Idle ---");
-                // ctx.close();
             } else if (event.state() == IdleState.ALL_IDLE) {
                 log.info("--- All_IDLE ---");
             }

@@ -1,26 +1,61 @@
 package com.zdzc.collector.common.packet;
 
+/**
+ * @Author liuwei
+ * @Description 消息头实体类
+ * @Date 2018/12/11 15:28
+ */
 public class Header {
 
-    private int msgLength; // 整条消息的长度
+    /**
+     * 整条消息的长度
+     */
+    private int msgLength;
 
-    private String protocolType; // 协议类型
+    /**
+     * 协议类型
+     */
+    private String protocolType;
 
-    private int msgId;  // 消息ID
+    /**
+     * 消息ID
+     */
+    private int msgId;
 
-    private String msgIdStr; //字符串形式消息ID
+    /**
+     * 字符串形式消息ID
+     */
+    private String msgIdStr;
 
-    private int msgBodyLength;  // 消息体长度
+    /**
+     * 消息体长度
+     */
+    private int msgBodyLength;
 
-    private String terminalPhone;   //终端手机号
+    /**
+     * 终端手机号
+     */
+    private String terminalPhone;
 
-    private int flowId; //消息流水号
+    /**
+     * 消息流水号
+     */
+    private int flowId;
 
-    private int msgBodyProps;   //消息体属性
+    /**
+     * 消息体属性
+     */
+    private int msgBodyProps;
 
-    private boolean hasSubPackage;  //是否有子包
+    /**
+     * 是否有子包
+     */
+    private boolean hasSubPackage;
 
-    private int msgType;    //消息类型：位置、报警、心跳等
+    /**
+     * 消息类型：位置、报警、心跳等
+     */
+    private int msgType;
 
     public int getMsgLength() {
         return msgLength;

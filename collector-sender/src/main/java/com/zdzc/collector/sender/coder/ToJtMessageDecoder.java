@@ -18,7 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * 部标808协议解析类
+ * @Author liuwei
+ * @Description 部标808协议解析类
+ * @Date 2018/12/11 15:49
  */
 public class ToJtMessageDecoder {
 
@@ -50,7 +52,8 @@ public class ToJtMessageDecoder {
         Header header = new Header();
         decodeHeader(data, header);
         Message message = new Message();
-        message.setHeader(header);//设置消息头
+        //设置消息头
+        message.setHeader(header);
         int msgBodyByteStartIndex = 12 + 1;
         // 3. 消息体
         // 有子包信息,消息体起始字节后移四个字节:消息包总数(word(16))+包序号(word(16))
@@ -61,7 +64,8 @@ public class ToJtMessageDecoder {
         //设置消息体
         byte[] buffer = new byte[header.getMsgBodyLength()];
         System.arraycopy(data, msgBodyByteStartIndex, buffer, 0,header.getMsgBodyLength());
-        message.setBody(buffer);//设置消息体
+        //设置消息体
+        message.setBody(buffer);
         message.setAll(StringUtil.toHexStringPadded(data));
 
         //设置应答消息
@@ -119,7 +123,8 @@ public class ToJtMessageDecoder {
             logger.info("【808】终端心跳 ==> " + all);
             SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
             String time = sdf.format(new Date());
-            byte[] msgBody = ByteArrayUtil.hexStringToByteArray(time);//自定义心跳body为当前时间
+            //自定义心跳body为当前时间
+            byte[] msgBody = ByteArrayUtil.hexStringToByteArray(time);
             //客户端消息应答
             byte[] sendMsg = newCommonReplyMsg(0005, terminalPhone, flowId, msgId);
             //设置回复信息

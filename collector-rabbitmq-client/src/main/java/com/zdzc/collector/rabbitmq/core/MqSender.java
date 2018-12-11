@@ -8,6 +8,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+/**
+ * @Author liuwei
+ * @Description MQ消息发送类
+ * @Date 2018/12/11 15:43
+ */
 public class MqSender {
 
     private static final Logger logger = LoggerFactory.getLogger(MqSender.class);

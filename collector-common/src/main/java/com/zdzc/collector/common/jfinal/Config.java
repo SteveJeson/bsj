@@ -3,11 +3,16 @@ package com.zdzc.collector.common.jfinal;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class P {
+/**
+ * @Author liuwei
+ * @Description properties配置文件读取类
+ * @Date 2018/12/11 15:46
+ */
+public class Config {
     private static Prop prop = null;
-    private static final ConcurrentHashMap<String, Prop> map = new ConcurrentHashMap();
+    private static ConcurrentHashMap<String, Prop> map = new ConcurrentHashMap();
 
-    private P() {
+    private Config() {
     }
 
     public static Prop use(String fileName) {
@@ -17,8 +22,8 @@ public class P {
     public static Prop use(String fileName, String encoding) {
         Prop result = (Prop)map.get(fileName);
         if (result == null) {
-            Class var3 = P.class;
-            synchronized(P.class) {
+            Class var3 = Config.class;
+            synchronized(Config.class) {
                 result = (Prop)map.get(fileName);
                 if (result == null) {
                     result = new Prop(fileName, encoding);
@@ -40,8 +45,8 @@ public class P {
     public static Prop use(File file, String encoding) {
         Prop result = (Prop)map.get(file.getName());
         if (result == null) {
-            Class var3 = P.class;
-            synchronized(P.class) {
+            Class var3 = Config.class;
+            synchronized(Config.class) {
                 result = (Prop)map.get(file.getName());
                 if (result == null) {
                     result = new Prop(file, encoding);
@@ -71,8 +76,8 @@ public class P {
     }
 
     public static Prop append(Prop prop) {
-        Class var1 = P.class;
-        synchronized(P.class) {
+        Class var1 = Config.class;
+        synchronized(Config.class) {
             if (prop != null) {
                 prop.append(prop);
             } else {
@@ -125,7 +130,7 @@ public class P {
 
     public static Prop getProp() {
         if (prop == null) {
-            throw new IllegalStateException("Load propties file by invoking P.use(String fileName) method first.");
+            throw new IllegalStateException("Load propties file by invoking Config.use(String fileName) method first.");
         } else {
             return prop;
         }

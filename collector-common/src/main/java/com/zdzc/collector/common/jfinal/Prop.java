@@ -7,6 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.Properties;
 
+/**
+ * @Author liuwei
+ * @Description properties配置文件属性类
+ * @Date 2018/12/11 15:46
+ */
 public class Prop {
     private static Logger log = LoggerFactory.getLogger(Prop.class);
 
@@ -36,7 +41,7 @@ public class Prop {
     public Prop(String fileName, String encoding) {
         InputStream inputStream = null;
         try {
-            inputStream = getClassLoader().getResourceAsStream(fileName);		// properties.load(Prop.class.getResourceAsStream(fileName));
+            inputStream = getClassLoader().getResourceAsStream(fileName);
             if (inputStream == null) {
                 throw new IllegalArgumentException("Properties file not found in classpath: " + fileName);
             }
@@ -46,7 +51,14 @@ public class Prop {
             throw new RuntimeException("Error loading properties file.", e);
         }
         finally {
-            if (inputStream != null) try {inputStream.close();} catch (IOException e) {log.error(e.getMessage(), e);}
+            if (inputStream != null){
+                try {
+                    inputStream.close();
+                } catch (IOException e)
+                {
+                    log.error(e.getMessage(), e);
+                }
+            }
         }
     }
 
@@ -90,7 +102,13 @@ public class Prop {
             throw new RuntimeException("Error loading properties file.", e);
         }
         finally {
-            if (inputStream != null) try {inputStream.close();} catch (IOException e) {log.error(e.getMessage(), e);}
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
         }
     }
 
@@ -181,9 +199,9 @@ public class Prop {
         String value = properties.getProperty(key);
         if (value != null) {
             value = value.toLowerCase().trim();
-            if ("true".equals(value)) {
+            if (Boolean.valueOf(value)) {
                 return true;
-            } else if ("false".equals(value)) {
+            } else if (!Boolean.valueOf(value)) {
                 return false;
             }
             throw new RuntimeException("The value can not parse to Boolean : " + value);

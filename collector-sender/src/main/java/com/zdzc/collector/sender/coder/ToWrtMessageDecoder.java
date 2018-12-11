@@ -17,7 +17,9 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 沃瑞特C11协议解析类
+ * @Author liuwei
+ * @Description 沃瑞特C11协议解析类
+ * @Date 2018/12/11 15:50
  */
 public class ToWrtMessageDecoder {
 

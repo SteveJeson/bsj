@@ -22,19 +22,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @Author liuwei
+ * @Description 沃瑞特消息处理类
+ * @Date 2018/12/11 15:51
+ */
 public class WrtMessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(JtMessageHandler.class);
 
-    private static final AtomicInteger gpsNum = new AtomicInteger(0);
-    private static final AtomicInteger alarmNum = new AtomicInteger(0);
-    private static final AtomicInteger heartbeatNum = new AtomicInteger(0);
-    private static final AtomicInteger controllerNum = new AtomicInteger(0);
+    private static AtomicInteger gpsNum = new AtomicInteger(0);
+    private static AtomicInteger alarmNum = new AtomicInteger(0);
+    private static AtomicInteger heartbeatNum = new AtomicInteger(0);
+    private static AtomicInteger controllerNum = new AtomicInteger(0);
 
     public static ConcurrentHashMap<String, String> channelMap = new ConcurrentHashMap<>();
 
     public static void handler(ChannelHandlerContext ctx, Message message) throws Exception {
-        //TODO 待验证
         String channelId = ctx.channel().id().toString();
         if(!message.getStick()){
             //给客户端发送应答消息

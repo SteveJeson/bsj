@@ -11,19 +11,20 @@ import com.zdzc.collector.tcpclient.core.ClientPoolManager;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.CharsetUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @Author liuwei
+ * @Description 部标808协议数据处理类
+ * @Date 2018/12/11 15:35
+ */
 public class JtMessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(JtMessageHandler.class);
-
-    private static final AtomicInteger gpsNum = new AtomicInteger(0);
-    private static final AtomicInteger alarmNum = new AtomicInteger(0);
-    private static final AtomicInteger heartbeatNum = new AtomicInteger(0);
+    private static AtomicInteger gpsNum = new AtomicInteger(0);
+    private static AtomicInteger alarmNum = new AtomicInteger(0);
+    private static AtomicInteger heartbeatNum = new AtomicInteger(0);
 
     public static void handler(ChannelHandlerContext ctx, Message message){
         //给客户端发送应答消息
@@ -37,16 +38,13 @@ public class JtMessageHandler {
         int msgType = message.getHeader().getMsgType();
         if(msgType == DataType.GPS.getValue()){
             //定位
-//                System.out.println("gps num ==> " + gpsNum.intValue());
             toSendGpsMessage(message);
         }else if(msgType == DataType.ALARM.getValue()){
             //报警
-//                System.out.println("alarm num ==> " + alarmNum.intValue());
             toSendAlarmMessage(message);
 
         }else if(msgType == DataType.HEARTBEAT.getValue()){
             //心跳
-//                System.out.println("heartbeat num ==> " + heartbeatNum.intValue());
             toSendHeartBeatMessage(message);
         }
     }

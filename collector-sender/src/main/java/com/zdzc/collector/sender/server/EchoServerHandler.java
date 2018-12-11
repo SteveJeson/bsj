@@ -15,11 +15,16 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @Author liuwei
+ * @Description TCP服务端处理类
+ * @Date 2018/12/11 15:28
+ */
 public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
 
-    static final ChannelGroup channels = new DefaultChannelGroup(
+    static ChannelGroup channels = new DefaultChannelGroup(
             GlobalEventExecutor.INSTANCE);
 
     public EchoServerHandler() {
@@ -71,7 +76,6 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception {
-//        ctx.close();
         logger.warn(cause.getMessage());
     }
 

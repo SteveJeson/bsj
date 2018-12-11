@@ -2,8 +2,12 @@ package com.zdzc.collector.common.utils;
 
 import java.util.Calendar;
 
+/**
+ * @Author liuwei
+ * @Description 日期处理类
+ * @Date 2018/12/11 15:27
+ */
 public class DateUtil {
-
 
     public static long getUTCTime() {
         // 取得本地时间：

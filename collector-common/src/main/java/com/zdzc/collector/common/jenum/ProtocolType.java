@@ -1,11 +1,30 @@
 package com.zdzc.collector.common.jenum;
 
 /**
- * 协议类型
+ * @Author liuwei
+ * @Description 协议类型枚举
+ * @Date 2018/12/11 15:47
  */
 public enum ProtocolType {
-    JT808("01", "部标808协议"), WRT("02", "沃瑞特C11协议"), BSJ("03", "博实结协议");
+
+    /**
+     * 部标808协议
+     */
+    JT808("01", "部标808协议"),
+
+    /**
+     * 沃瑞特C11协议
+     */
+    WRT("02", "沃瑞特C11协议"),
+
+    /**
+     * 博实结私有协议
+     */
+    BSJ("03", "博实结协议");
+
+
     private String value;
+
     private String desc;
 
     ProtocolType(String value, String desc) {

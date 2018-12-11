@@ -4,6 +4,11 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
+/**
+ * @Author liuwei
+ * @Description Netty服务器通道初始化类
+ * @Date 2018/12/11 15:45
+ */
 public class NettyMqServerChannelInitializer extends
         ChannelInitializer<SocketChannel> {
 
