@@ -42,4 +42,9 @@ public class Command {
     public static final String MSG_HEART_INTERVAL_RESP = "CP03";//设置心跳上传频率的设备回复
     public static final String MSG_IP_RESP = "AP64";//设置IP域名的设备回复
 
+    public static final String BSJ_MSG_LOGIN = "01";
+    public static final String BSJ_MSG_LOCATION = "22";
+    public static final String BSJ_MSG_ALARM = "26";
+    public static final String BSJ_MSG_HEARTBEAT = "13";
+
 }
