@@ -1,5 +1,6 @@
 package com.zdzc.collector.sender.server;
 
+import com.zdzc.collector.sender.coder.JtProtocolDecoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -21,7 +22,8 @@ public class NettyMqServerChannelInitializer extends
         // Reader ilde time 3 minutes
         ch.pipeline().addLast(new IdleStateHandler(5 * 60, 0, 0));
         ch.pipeline().addLast(new HeartBeatHandler());
-        ch.pipeline().addLast(new ToMessageDecoder());
+//        ch.pipeline().addLast(new ToMessageDecoder());
+        ch.pipeline().addLast(new JtProtocolDecoder());
         ch.pipeline().addLast(new EchoServerHandler());
     }
 }

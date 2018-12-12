@@ -31,4 +31,7 @@ public interface SysConst {
 
     int FIGURE_HEX_ONE = 0x1;
 
+    int FIGURE_HEX_FF = 0xFF;
+
+    int JTPROTOCOL_BEGINMARK = 0x7E;
 }

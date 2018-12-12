@@ -46,6 +46,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
                 //博实结
                 BsjMessageHandler.handler(ctx, message);
             }
+
         }catch (Exception e){
             logger.error(e.getMessage());
         }
