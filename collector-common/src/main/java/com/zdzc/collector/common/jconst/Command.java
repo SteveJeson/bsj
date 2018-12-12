@@ -183,6 +183,8 @@ public class Command {
      */
     public static final String HTTP_DATA_BATCH = "deviceDatasChanged";
 
+    public static final String HTTP_REQUEST_IDENTIFY = "OceanConnect";
+
     /**
      * 博实结登录数据ID
      */

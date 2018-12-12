@@ -6,7 +6,7 @@
     <contextName>logback</contextName>
 
     <!--输出sql语句-->
-    <logger name="com.zdzc" level="debug"/>
+    <logger name="com.zdzc.collector" level="debug"/>
     <property name="path" value="/Logs/collector/sender"></property>
     <property name="maxHistory" value="30"/>
     <property name="maxFileSize" value="50MB"/>

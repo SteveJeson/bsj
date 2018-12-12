@@ -34,6 +34,7 @@ public class ClientPoolManager {
 
         // 初始化连接池
         channelPool = new FixedChannelPool(bootstrap, new ClientChannelPoolHandler(), maxChannel);
+        System.out.println("Connected remote TCP server -> " + remoteHost + ":" + remotePort);
     }
 
     public static void send(String message){

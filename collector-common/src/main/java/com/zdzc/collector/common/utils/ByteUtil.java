@@ -163,7 +163,6 @@ public class ByteUtil {
             byte high = ascII2Bcd(bs[2 * i]);
             byte low = ascII2Bcd(bs[2 * i + 1]);
 
-            // TODO 只遮罩BCD低四位?
             ret[i] = (byte)((high << 4) | low);
         }
         return ret;
