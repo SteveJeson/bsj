@@ -39,9 +39,6 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
         buffer.getBytes(buffer.readerIndex(), r);
 //        System.out.println("剩余可读包 -> "+ByteArrayUtil.toHexString(r));
 
-        // 记录包头开始的index
-        int beginReader;
-
         while (buffer.isReadable()) {
             if(buffer.readableBytes() < headerLen){
                 return;
@@ -66,7 +63,9 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
 
             byte[] propByte = new byte[2];
             buffer.getBytes(buffer.readerIndex() + 3, propByte);
-            int contentLen = ByteUtil.twoBytesToInteger(propByte);
+            boolean hasSubPackage = (((ByteUtil.byteToInteger(propByte) & 0x2000) >> 13) == 1);
+
+            int contentLen = ByteUtil.byteToInteger(propByte) & 0x3ff;
             if(buffer.readableBytes() < contentLen + headerLen + 3){
                 return;
             }
@@ -84,6 +83,8 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             //3、读取消息属性
             byte[] prop = new byte[2];
             buffer.getBytes(buffer.readerIndex(), prop);
+            int bodyProp = ByteUtil.byteToInteger(prop);
+            header.setMsgBodyProps(bodyProp);
             buffer.readBytes(2);
             System.out.println("消息属性 -> " + ByteUtil.bytesToHexString(prop));
             int bodyLen = ByteUtil.twoBytesToInteger(prop);
@@ -107,6 +108,9 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             System.out.println("流水号 -> "+ByteUtil.bytesToHexString(flowIdByte));
 
             //6、读取消息体
+            if(hasSubPackage){
+                buffer.readBytes(4);
+            }
             byte[] body = new byte[contentLen];
             buffer.getBytes(buffer.readerIndex(), body);
             buffer.readBytes(contentLen);

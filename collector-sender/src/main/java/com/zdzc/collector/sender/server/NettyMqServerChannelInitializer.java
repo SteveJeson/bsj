@@ -1,9 +1,12 @@
 package com.zdzc.collector.sender.server;
 
+import com.zdzc.collector.common.jenum.ProtocolType;
+import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.sender.coder.JtProtocolDecoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @Author liuwei
@@ -23,7 +26,10 @@ public class NettyMqServerChannelInitializer extends
         ch.pipeline().addLast(new IdleStateHandler(5 * 60, 0, 0));
         ch.pipeline().addLast(new HeartBeatHandler());
 //        ch.pipeline().addLast(new ToMessageDecoder());
-        ch.pipeline().addLast(new JtProtocolDecoder());
+        if(StringUtils.equals(Config.get("protocol.type"), ProtocolType.JT808.getValue())){
+            ch.pipeline().addLast(new JtProtocolDecoder());
+        }
+
         ch.pipeline().addLast(new EchoServerHandler());
     }
 }
