@@ -1,6 +1,12 @@
 package com.zdzc.collector.common.coder;
 
+import com.zdzc.collector.common.jenum.ProtocolSign;
+import com.zdzc.collector.common.packet.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,6 +17,7 @@ import java.util.List;
  */
 public class MsgDecoder {
 
+    private static final Logger logger = LoggerFactory.getLogger(MsgDecoder.class);
     /**
      * 验证校验和(JT808协议)
      * @param data
@@ -113,6 +120,34 @@ public class MsgDecoder {
             buffer.put(b);
         }
         return buffer.array();
+    }
+
+    /**
+     *  拆包
+     * @param info 消息
+     * @param beginMark 起始标志
+     * @param endMark
+     * @return
+     */
+    public static List<String> dealPackageSplicing(String info, String beginMark, String endMark){
+        List<String> messages = new ArrayList<>();
+        String[] msgArr = info.split(endMark + beginMark);
+        if (msgArr.length != 1) {
+            for (int i = 0; i < msgArr.length; i++) {
+                String message;
+                if (i == 0) {
+                    message = msgArr[i] + endMark;
+                } else if (i == msgArr.length - 1) {
+                    message = beginMark + msgArr[i];
+                } else {
+                    message = beginMark + msgArr[i] + endMark;
+                }
+                messages.add(message);
+            }
+        }else {
+            logger.warn("unknown message: " + info);
+        }
+        return messages;
     }
 
 }

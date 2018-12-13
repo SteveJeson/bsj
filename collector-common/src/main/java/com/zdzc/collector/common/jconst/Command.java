@@ -203,4 +203,9 @@ public class Command {
      */
     public static final String BSJ_MSG_HEARTBEAT = "13";
 
+    /**
+     * 博实结回复数据包长度
+     */
+    public static final String BSJ_MSG_RETURN_LENGTH = "05";
+
 }

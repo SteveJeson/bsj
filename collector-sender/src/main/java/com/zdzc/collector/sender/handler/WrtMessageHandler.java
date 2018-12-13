@@ -1,9 +1,11 @@
 package com.zdzc.collector.sender.handler;
 
 import com.rabbitmq.client.Channel;
+import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
 import com.zdzc.collector.common.jconst.SysConst;
 import com.zdzc.collector.common.jenum.DataType;
+import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.rabbitmq.core.MqSender;
@@ -78,7 +80,7 @@ public class WrtMessageHandler {
             }
         }else{
             logger.info("handle stick message -> {}", message.getAll());
-            List<String> list = ToWrtMessageDecoder.dealPackageSplicing(message.getAll());
+            List<String> list = MsgDecoder.dealPackageSplicing(message.getAll(), ProtocolSign.WRT_BEGINMARK.getValue(), ProtocolSign.WRT_ENDMARK.getValue());
             for (String data : list){
                 Message msg = ToWrtMessageDecoder.decodeMessage(data);
                 handler(ctx, msg);

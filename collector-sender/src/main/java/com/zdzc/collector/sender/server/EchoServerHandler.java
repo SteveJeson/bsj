@@ -2,6 +2,7 @@ package com.zdzc.collector.sender.server;
 
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Message;
+import com.zdzc.collector.sender.handler.BsjMessageHandler;
 import com.zdzc.collector.sender.handler.JtMessageHandler;
 import com.zdzc.collector.sender.handler.WrtMessageHandler;
 import io.netty.channel.Channel;
@@ -40,11 +41,10 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
                 JtMessageHandler.handler(ctx, message);
             }else if(StringUtils.equals(ProtocolType.WRT.getValue(), message.getHeader().getProtocolType())){
                 //wrt
-                try {
-                    WrtMessageHandler.handler(ctx, message);
-                } catch (Exception e) {
-                    logger.error(e.getMessage());
-                }
+                WrtMessageHandler.handler(ctx, message);
+            }else if(StringUtils.equals(ProtocolType.BSJ.getValue(), message.getHeader().getProtocolType())){
+                //博实结
+                BsjMessageHandler.handler(ctx, message);
             }
         }catch (Exception e){
             logger.error(e.getMessage());

@@ -66,6 +66,7 @@ public class ToMessageDecoder extends MessageToMessageDecoder {
                 logger.debug("source data -> {}", str);
                 message = ToWrtMessageDecoder.decode(str);
             }else if (StringUtils.equals(markList.get(2), bsjBeginMark.toUpperCase())){
+                //博实结协议
                 String hexStr = ByteUtil.bytesToHexString(arr);
                 logger.debug("source data -> {}", hexStr);
                 message = ToBsjMessageDecoder.decode(arr);

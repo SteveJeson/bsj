@@ -113,6 +113,14 @@ public class MqInitializer {
 
     public static String wrtCmdReplyQueueName = Config.get("wrt.command.queue.reply.name");
 
+    public static String bsjLoginQueueName = Config.get("bsj.login.queue.name");
+
+    public static String bsjLocationQueueName = Config.get("bsj.location.queue.name");
+
+    public static String bsjAlarmQueueName = Config.get("bsj.alarm.queue.name");
+
+    public static String bsjHeartbeatQueueName = Config.get("bsj.heartbeat.queue.name");
+
     public static ConnectionFactory factory;
 
     public static final Logger logger = LoggerFactory.getLogger(MqInitializer.class);
@@ -133,6 +141,14 @@ public class MqInitializer {
 
     public static CopyOnWriteArrayList<Channel> businessChannels = new CopyOnWriteArrayList<>();
 
+    public static Channel bsjLoginChannel;
+
+    public static Channel bsjLocationChannel;
+
+    public static Channel bsjAlarmChannel;
+
+    public static Channel bsjHeartbeatChannel;
+
     public static Channel replyChannel;
 
     /**
@@ -149,6 +165,9 @@ public class MqInitializer {
         }else if(ProtocolType.WRT.getValue().equals(protocolType)){
             logger.info("即将配置消息队列 -> {}", ProtocolType.WRT.getDesc());
             configWrtMq();
+        }else if(ProtocolType.BSJ.getValue().equals(protocolType)){
+            logger.info("即将配置消息队列 -> {}", ProtocolType.BSJ.getDesc());
+            configBsjMq();
         }
     }
 
@@ -210,8 +229,31 @@ public class MqInitializer {
             logger.info("create CONTROLLER connection -> {}", i+1);
             createQueues(factory.newConnection(), wrtControllerQueuePrefix, wrtControllerChannelCount, wrtControllerQueueCount, wrtControllerQueueStart, wrtControllerChannels);
         }
-
         createQueues(factory.newConnection(), wrtCmdReplyQueueName);
+    }
+
+    /**
+     * 配置博实结协议消息队列
+     * @throws Exception
+     */
+    private static void configBsjMq() throws IOException, TimeoutException{
+        //登录
+        Connection loginConnection = factory.newConnection();
+        bsjLoginChannel = loginConnection.createChannel();
+        bsjLoginChannel.queueDeclare(bsjLoginQueueName, true, false, false, null);
+        //位置
+        Connection locationConnection = factory.newConnection();
+        bsjLocationChannel = locationConnection.createChannel();
+        bsjLocationChannel.queueDeclare(bsjLocationQueueName, true, false, false, null);
+        //报警
+        Connection alarmConnection = factory.newConnection();
+        bsjAlarmChannel = alarmConnection.createChannel();
+        bsjAlarmChannel.queueDeclare(bsjAlarmQueueName, true, false, false, null);
+        //心跳
+        Connection heartbeatConnection = factory.newConnection();
+        bsjHeartbeatChannel = heartbeatConnection.createChannel();
+        bsjHeartbeatChannel.queueDeclare(bsjHeartbeatQueueName, true, false, false, null);
+
     }
 
     /**

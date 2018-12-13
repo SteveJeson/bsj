@@ -48,33 +48,33 @@ public class ToWrtMessageDecoder {
         }
     }
 
-    /**
-     * 拆包 -> 沃瑞特C11
-     * @param info
-     * @return
-     */
-    public static List<String> dealPackageSplicing(String info){
-        List<String> messages = new ArrayList<>();
-        String beginMark = ProtocolSign.WRT_BEGINMARK.getValue();
-        String endMark = ProtocolSign.WRT_ENDMARK.getValue();
-        String[] msgArr = info.split(endMark + beginMark);
-        if (msgArr.length != 1) {
-            for (int i = 0; i < msgArr.length; i++) {
-                String message;
-                if (i == 0) {
-                    message = msgArr[i] + endMark;
-                } else if (i == msgArr.length - 1) {
-                    message = beginMark + msgArr[i];
-                } else {
-                    message = beginMark + msgArr[i] + endMark;
-                }
-                messages.add(message);
-            }
-        }else {
-            logger.warn("unknown message: " + info);
-        }
-        return messages;
-    }
+//    /**
+//     * 拆包 -> 沃瑞特C11
+//     * @param info
+//     * @return
+//     */
+//    public static List<String> dealPackageSplicing(String info){
+//        List<String> messages = new ArrayList<>();
+//        String beginMark = ProtocolSign.WRT_BEGINMARK.getValue();
+//        String endMark = ProtocolSign.WRT_ENDMARK.getValue();
+//        String[] msgArr = info.split(endMark + beginMark);
+//        if (msgArr.length != 1) {
+//            for (int i = 0; i < msgArr.length; i++) {
+//                String message;
+//                if (i == 0) {
+//                    message = msgArr[i] + endMark;
+//                } else if (i == msgArr.length - 1) {
+//                    message = beginMark + msgArr[i];
+//                } else {
+//                    message = beginMark + msgArr[i] + endMark;
+//                }
+//                messages.add(message);
+//            }
+//        }else {
+//            logger.warn("unknown message: " + info);
+//        }
+//        return messages;
+//    }
 
     /**
      * 解析消息 -> 沃瑞特C11
