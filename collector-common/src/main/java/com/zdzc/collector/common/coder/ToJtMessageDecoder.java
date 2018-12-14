@@ -1,13 +1,13 @@
-package com.zdzc.collector.sender.coder;
+package com.zdzc.collector.common.coder;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
-import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
 import com.zdzc.collector.common.jenum.DataType;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Header;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.common.utils.ByteUtil;
+import io.netty.util.CharsetUtil;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +70,9 @@ public class ToJtMessageDecoder {
 
         //设置应答消息
         setReplyBodyAndType(message);
+
+        //设置推送到MQ的消息体
+        toSetSendBody(message);
         return message;
     }
 
@@ -102,14 +105,14 @@ public class ToJtMessageDecoder {
         String all = message.getAll();
         if (msgId == Command.MSG_ID_TERMINAL_REGISTER)
         {
-            logger.info("【808】终端注册 ==> " + all);
+            logger.debug("【808】终端注册 -> {}", all);
             //1. 终端注册 ==> 终端注册应答
             byte[] sendMsg = newRegistryReplyMsg(0014, terminalPhone, flowId);
             message.setReplyBody(sendMsg);
             message.getHeader().setMsgType(DataType.Registry.getValue());
         }else if (msgId == Command.MSG_ID_TERMINAL_AUTHENTICATION)
         {
-            logger.info("【808】终端鉴权 ==> " + all);
+            logger.debug("【808】终端鉴权 -> {}", all);
             //2. 终端鉴权 ==> 平台通用应答
             byte[] sendMsg = newCommonReplyMsg(0005, terminalPhone, flowId, msgId);
             message.setReplyBody(sendMsg);
@@ -120,7 +123,7 @@ public class ToJtMessageDecoder {
         }else if (msgId == Command.MSG_ID_TERMINAL_HEART_BEAT)
         {
             //3. 终端心跳-消息体为空 ==> 平台通用应答
-            logger.info("【808】终端心跳 ==> " + all);
+            logger.debug("【808】终端心跳 -> {}", all);
             SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
             String time = sdf.format(new Date());
             //自定义心跳body为当前时间
@@ -133,7 +136,7 @@ public class ToJtMessageDecoder {
             message.getHeader().setMsgType(DataType.HEARTBEAT.getValue());
         }else if (msgId == Command.MSG_ID_TERMINAL_LOCATION_INFO_UPLOAD)
         {
-            logger.info("【808】终端定位（单个） ==> " + all);
+            logger.debug("【808】终端定位（单个） -> {}", all);
             //4. 位置信息汇报 ==> 平台通用应答
             byte[] sendMsg = newCommonReplyMsg(0005, terminalPhone, flowId, msgId);
             message.setReplyBody(sendMsg);
@@ -141,7 +144,7 @@ public class ToJtMessageDecoder {
             message.getHeader().setMsgType(alarmSign <= 0?DataType.GPS.getValue():DataType.ALARM.getValue());
         }else if (msgId == Command.MSG_ID_TERMINAL_LOCATION_INFO_BATCH_UPLOAD)
         {
-            logger.info("【808】终端定位（批量） ==> " + all);
+            logger.debug("【808】终端定位（批量） -> {}", all);
             //5.定位数据批量上传0x0704协议解析
             byte[] sendMsg = newCommonReplyMsg(0005, terminalPhone, flowId, msgId);
             message.setReplyBody(sendMsg);
@@ -150,7 +153,7 @@ public class ToJtMessageDecoder {
             message.getHeader().setMsgType(alarmSign <= 0?DataType.GPS.getValue():DataType.ALARM.getValue());
         }else if (msgId == Command.MSG_ID_TERMINAL_PROP_QUERY_RESP)
         {
-            logger.info("【808】终端属性查询应答 ==> " + all);
+            logger.debug("【808】终端属性查询应答 -> {}", all);
             //6.终端属性应答消息
             byte[] msgType = new byte[1];
             msgType[0] = 02;
@@ -159,7 +162,41 @@ public class ToJtMessageDecoder {
             message.getHeader().setMsgType(DataType.Property.getValue());
         }else
         {
-            logger.error("【808】未知消息类型，终端手机号 ==> "+terminalPhone);
+            logger.error("【808】未知消息类型，终端手机号 -> {}", terminalPhone);
+        }
+    }
+
+    /**
+     * 设置推送到MQ的消息体
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/12 10:48
+     */
+    public static void toSetSendBody(Message message) {
+        int msgType = message.getHeader().getMsgType();
+        if(msgType == DataType.GPS.getValue()){
+            //定位
+            byte[] sign = new byte[1];
+            sign[0] = 01;
+            byte[] newBody = ByteUtil.bytesMerge(sign, message.getBody());
+            byte[] sendMsg = ByteUtil.bytesMerge(
+                    ByteArrayUtil.hexStringToByteArray(message.getHeader().getTerminalPhone()), newBody);
+            String hex = ByteArrayUtil.toHexString(sendMsg);
+            message.setSendBody(hex.getBytes(CharsetUtil.UTF_8));
+        }else if(msgType == DataType.ALARM.getValue()){
+            //报警
+            byte[] sendMsg = ByteUtil.bytesMerge(ByteArrayUtil
+                    .hexStringToByteArray(message.getHeader().getTerminalPhone()), message.getBody());
+            String hex = ByteArrayUtil.toHexString(sendMsg);
+            message.setSendBody(hex.getBytes(CharsetUtil.UTF_8));
+
+        }else if(msgType == DataType.HEARTBEAT.getValue()){
+            //心跳
+            byte[] sendMsg = ByteUtil.bytesMerge(ByteArrayUtil
+                    .hexStringToByteArray(message.getHeader().getTerminalPhone()), message.getBody());
+            String hex = ByteArrayUtil.toHexString(sendMsg);
+            message.setSendBody(hex.getBytes(CharsetUtil.UTF_8));
         }
     }
 

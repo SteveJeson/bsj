@@ -25,7 +25,7 @@ public class MsgDecoder {
      */
     public static Boolean validateChecksum(byte[] data){
         // 1. 去掉分隔符之后，最后一位就是校验码
-        int checkSumInPkg = data[data.length - 1 - 1];
+        int checkSumInPkg = data[data.length - 1 - 1] & 0xFF;
         int calculatedCheckSum = calculateChecksum(data, 1, data.length - 1 - 1);
         if (checkSumInPkg != calculatedCheckSum)
         {
@@ -49,7 +49,7 @@ public class MsgDecoder {
             cs ^= data[i];
 
         }
-        return cs;
+        return cs & 0xFF;
     }
 
     /**

@@ -1,16 +1,13 @@
 package com.zdzc.collector.sender.handler;
 
 import com.rabbitmq.client.Channel;
-import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
 import com.zdzc.collector.common.jconst.SysConst;
 import com.zdzc.collector.common.jenum.DataType;
-import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.rabbitmq.core.MqSender;
 import com.zdzc.collector.rabbitmq.init.MqInitializer;
-import com.zdzc.collector.sender.coder.ToWrtMessageDecoder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang.StringUtils;
@@ -42,49 +39,41 @@ public class WrtMessageHandler {
 
     public static void handler(ChannelHandlerContext ctx, Message message) throws Exception {
         String channelId = ctx.channel().id().toString();
-        if(!message.getStick()){
-            //给客户端发送应答消息
-            if(message.getReplyBody() != null){
-                ctx.writeAndFlush(Unpooled.copiedBuffer(message.getReplyBody()));
+        //给客户端发送应答消息
+        if(message.getReplyBody() != null){
+            ctx.writeAndFlush(Unpooled.copiedBuffer(message.getReplyBody()));
+        }
+
+        if(message.getExtReplyBody() != null){
+            ctx.writeAndFlush(Unpooled.copiedBuffer(message.getExtReplyBody()));
+        }
+
+        if(StringUtils.equals(Command.WRT_MSG_ID_LOGIN, message.getHeader().getMsgIdStr())){
+            String terminalPhone = message.getHeader().getTerminalPhone();
+            if(!channelMap.containsKey(terminalPhone)){
+                channelMap.put(terminalPhone, channelId);
+                logger.info("saved key value -> {} : {}", terminalPhone, channelId);
             }
 
-            if(message.getExtReplyBody() != null){
-                ctx.writeAndFlush(Unpooled.copiedBuffer(message.getExtReplyBody()));
+            if(!channelMap.containsKey(channelId)){
+                channelMap.put(channelId, terminalPhone);
+                logger.info("saved key value -> {} : {}", channelId, terminalPhone);
             }
+            return;
+        }
 
-            if(StringUtils.equals(Command.WRT_MSG_ID_LOGIN, message.getHeader().getMsgIdStr())){
-                String terminalPhone = message.getHeader().getTerminalPhone();
-                if(!channelMap.containsKey(terminalPhone)){
-                    channelMap.put(terminalPhone, channelId);
-                    logger.info("saved key value -> {} : {}", terminalPhone, channelId);
-                }
-                if(!channelMap.containsKey(channelId)){
-                    channelMap.put(channelId, terminalPhone);
-                    logger.info("saved key value -> {} : {}", channelId, terminalPhone);
-                }
-                return;
-            }
-
-            String deviceCode = channelMap.get(channelId);
-            if(StringUtils.isEmpty(deviceCode)){
-                logger.warn("找不到所属设备号 -> {}", message.getAll());
-                return;
-            }
-            message.getHeader().setTerminalPhone(deviceCode);
-            toSendWrtMessage(message);
-            List<String> replyCmd = Arrays.asList(Command.MSG_GPS_INTERVAL_RESP, Command.MSG_DEFENCE_RESP, Command.MSG_POWER_STOP_RESP,
-                    Command.MSG_POWER_RECOVER_RESP, Command.MSG_OVERSPEED_RESP, Command.MSG_HEART_INTERVAL_RESP, Command.MSG_IP_RESP);
-            if(replyCmd.contains(message.getHeader().getMsgIdStr())){
-                message.setSendBody(message.getAll().getBytes());
-                MqSender.send(MqInitializer.replyChannel, message, MqInitializer.wrtCmdReplyQueueName);
-            }
-        }else{
-            logger.info("handle stick message -> {}", message.getAll());
-            List<String> list = MsgDecoder.dealPackageSplicing(message.getAll(), ProtocolSign.WRT_BEGINMARK.getValue(), ProtocolSign.WRT_ENDMARK.getValue());
-            for (String data : list){
-                Message msg = ToWrtMessageDecoder.decodeMessage(data);
-                handler(ctx, msg);
-            }
+        String deviceCode = channelMap.get(channelId);
+        if(StringUtils.isEmpty(deviceCode)){
+            logger.warn("没有登录 -> {}", message.getAll());
+            return;
+        }
+        message.getHeader().setTerminalPhone(deviceCode);
+        toSendWrtMessage(message);
+        List<String> replyCmd = Arrays.asList(Command.MSG_GPS_INTERVAL_RESP, Command.MSG_DEFENCE_RESP, Command.MSG_POWER_STOP_RESP,
+                Command.MSG_POWER_RECOVER_RESP, Command.MSG_OVERSPEED_RESP, Command.MSG_HEART_INTERVAL_RESP, Command.MSG_IP_RESP);
+        if(replyCmd.contains(message.getHeader().getMsgIdStr())){
+            message.setSendBody(message.getAll().getBytes());
+            MqSender.send(MqInitializer.replyChannel, message, MqInitializer.wrtCmdReplyQueueName);
         }
     }
 

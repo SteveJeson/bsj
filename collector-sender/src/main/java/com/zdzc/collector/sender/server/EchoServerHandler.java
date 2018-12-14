@@ -1,11 +1,13 @@
 package com.zdzc.collector.sender.server;
 
+import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
+import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.sender.handler.BsjMessageHandler;
+import com.zdzc.collector.sender.coder.ToWrtMessageDecoder;
 import com.zdzc.collector.sender.handler.JtMessageHandler;
 import com.zdzc.collector.sender.handler.WrtMessageHandler;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
@@ -34,8 +36,19 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        String protocolType =  Config.get("protocol.type");
+        Message message;
+        if (StringUtils.equals(protocolType, ProtocolType.WRT.getValue())) {
+            String dataStr = (String)msg;
+            System.out.println("source data -> " + dataStr);
+            if(dataStr.indexOf(ProtocolSign.WRT_BEGINMARK.getValue()) != 0){
+                return;
+            }
+            message = ToWrtMessageDecoder.decode(dataStr + ProtocolSign.WRT_ENDMARK.getValue());
+        } else {
+            message = (Message)msg;
+        }
         try {
-            Message message = (Message) (msg);
             if(StringUtils.equals(ProtocolType.JT808.getValue(), message.getHeader().getProtocolType())){
                 //808
                 JtMessageHandler.handler(ctx, message);
@@ -46,6 +59,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
                 //博实结
                 BsjMessageHandler.handler(ctx, message);
             }
+
         }catch (Exception e){
             logger.error(e.getMessage());
         }
@@ -63,7 +77,6 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Channel c = channels.find(ctx.channel().id());
         String channelId = ctx.channel().id().toString();
         System.out.println("A client disconnected -> " + channelId + ", " + channels.size());
         String value = WrtMessageHandler.channelMap.get(channelId);

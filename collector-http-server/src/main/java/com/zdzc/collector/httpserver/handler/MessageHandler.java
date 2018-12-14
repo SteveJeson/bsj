@@ -1,6 +1,10 @@
 package com.zdzc.collector.httpserver.handler;
 
 import com.zdzc.collector.common.packet.Message;
+import com.zdzc.collector.rabbitmq.handler.MqMessageHandler;
+import com.zdzc.collector.tcpclient.core.ClientPoolManager;
+
+import java.util.List;
 
 /**
  * @Author liuwei
@@ -9,7 +13,11 @@ import com.zdzc.collector.common.packet.Message;
  */
 public class MessageHandler {
 
-    public static void handler(Message message) {
-
+    public static void handler(List<Message> messageList) {
+        for (Message message : messageList) {
+            MqMessageHandler.handler(message);
+            ClientPoolManager.send(message.getAll());
+        }
     }
+
 }

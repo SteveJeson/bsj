@@ -5,7 +5,7 @@ import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.sender.coder.ToBsjMessageDecoder;
-import com.zdzc.collector.sender.coder.ToJtMessageDecoder;
+import com.zdzc.collector.common.coder.ToJtMessageDecoder;
 import com.zdzc.collector.sender.coder.ToWrtMessageDecoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -65,8 +65,7 @@ public class ToMessageDecoder extends MessageToMessageDecoder {
                 String str = new String(arr, SysConst.DEFAULT_ENCODING);
                 logger.debug("source data -> {}", str);
                 message = ToWrtMessageDecoder.decode(str);
-            }else if (StringUtils.equals(markList.get(2), bsjBeginMark.toUpperCase())){
-                //博实结协议
+            }else if (StringUtils.equals(markList.get(SysConst.FIGURE_TWO), bsjBeginMark.toUpperCase())){
                 String hexStr = ByteUtil.bytesToHexString(arr);
                 logger.debug("source data -> {}", hexStr);
                 message = ToBsjMessageDecoder.decode(arr);

@@ -163,7 +163,6 @@ public class ByteUtil {
             byte high = ascII2Bcd(bs[2 * i]);
             byte low = ascII2Bcd(bs[2 * i + 1]);
 
-            // TODO 只遮罩BCD低四位?
             ret[i] = (byte)((high << 4) | low);
         }
         return ret;
@@ -245,5 +244,20 @@ public class ByteUtil {
             hexString.append(hv);
         }
         return hexString.toString().toLowerCase();
+    }
+
+    /**
+     * 字节转十六进制字符串
+     * @author liuwei
+     * @return String
+     * @exception
+     * @date 2018/12/12 15:41
+     */
+    public static String byteToHex(byte b) {
+        String hex = Integer.toHexString(b & SysConst.FIGURE_HEX_FF);
+        if (hex.length() < 2) {
+            hex = "0" + hex;
+        }
+        return hex;
     }
 }
