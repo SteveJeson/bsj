@@ -15,6 +15,7 @@
         <module>collector-tcp-client</module>
         <module>collector-sender</module>
         <module>collector-http-server</module>
+        <module>collector-receiver</module>
     </modules>
 
     <properties>
