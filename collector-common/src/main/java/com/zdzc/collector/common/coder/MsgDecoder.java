@@ -1,7 +1,5 @@
 package com.zdzc.collector.common.coder;
 
-import com.zdzc.collector.common.jenum.ProtocolSign;
-import com.zdzc.collector.common.packet.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
