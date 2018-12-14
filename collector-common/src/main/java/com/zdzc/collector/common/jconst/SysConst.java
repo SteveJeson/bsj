@@ -34,4 +34,6 @@ public interface SysConst {
     int FIGURE_HEX_FF = 0xFF;
 
     int JTPROTOCOL_BEGINMARK = 0x7E;
+
+    int JTPROTOCOL_MAX_BYTES = 2048;
 }

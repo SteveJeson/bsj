@@ -173,7 +173,7 @@ public class ToJtMessageDecoder {
      * @exception
      * @date 2018/12/12 10:48
      */
-    private static void toSetSendBody(Message message) {
+    public static void toSetSendBody(Message message) {
         int msgType = message.getHeader().getMsgType();
         if(msgType == DataType.GPS.getValue()){
             //定位
