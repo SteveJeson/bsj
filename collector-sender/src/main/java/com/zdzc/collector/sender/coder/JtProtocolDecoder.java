@@ -32,6 +32,7 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) {
         //数据包太大不处理，防止恶意流量攻击
         if (buffer.readableBytes() > SysConst.JTPROTOCOL_MAX_BYTES) {
+            buffer.release();
             return;
         }
         //接收到的数据包
@@ -52,15 +53,16 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             byte[] readable = new byte[buffer.readableBytes()];
             buffer.getBytes(buffer.readerIndex(), readable);
             String hexPacket = ByteUtil.bytesToHexString(readable);
-            System.out.println("可读的完整包 -> " + hexPacket);
+//            System.out.println("可读的完整包 -> " + hexPacket);
 
             //1、读取开始标识符
             byte[] beginMark = new byte[1];
             buffer.getBytes(buffer.readerIndex(), beginMark);
-            System.out.println("开始标识符 -> " + ByteArrayUtil.toHexString(beginMark));
+//            System.out.println("开始标识符 -> " + ByteArrayUtil.toHexString(beginMark));
             if(SysConst.JTPROTOCOL_BEGINMARK != ByteUtil.byteToInteger(beginMark)){
-                System.out.println("不合法的包 -> " + hexPacket);
-                buffer.skipBytes(buffer.readableBytes());
+                logger.warn("不合法的包 -> {}", hexPacket);
+//                buffer.skipBytes(buffer.readableBytes());
+                buffer.readBytes(buffer.readableBytes());
                 return;
             }
             byte[] propByte = new byte[2];
@@ -79,7 +81,7 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             buffer.getBytes(buffer.readerIndex(), msgId);
             header.setMsgId(ByteUtil.byteToInteger(msgId));
             buffer.readBytes(2);
-            System.out.println("消息ID -> " + ByteUtil.bytesToHexString(msgId));
+//            System.out.println("消息ID -> " + ByteUtil.bytesToHexString(msgId));
             //3、读取消息属性
             byte[] prop = new byte[2];
             buffer.getBytes(buffer.readerIndex(), prop);
@@ -88,7 +90,7 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             header.setMsgBodyProps(bodyProp);
             header.setHasSubPackage(hasSubPackage);
             buffer.readBytes(2);
-            System.out.println("消息属性 -> " + ByteUtil.bytesToHexString(prop));
+//            System.out.println("消息属性 -> " + ByteUtil.bytesToHexString(prop));
             int bodyLen = ByteUtil.twoBytesToInteger(prop);
             header.setMsgBodyLength(bodyLen);
             //4、读取终端手机号
@@ -96,14 +98,14 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             buffer.getBytes(buffer.readerIndex(), terminalPhone);
             buffer.readBytes(6);
             String phone = ByteUtil.bytesToHexString(terminalPhone);
-            System.out.println("手机号 -> "+ phone);
+//            System.out.println("手机号 -> "+ phone);
             header.setTerminalPhone(phone);
             //5、读取流水号
             byte[] flowIdByte = new byte[2];
             buffer.getBytes(buffer.readerIndex(), flowIdByte);
             buffer.readBytes(2);
             header.setFlowId(ByteUtil.byteToInteger(flowIdByte));
-            System.out.println("流水号 -> "+ByteUtil.bytesToHexString(flowIdByte));
+//            System.out.println("流水号 -> "+ByteUtil.bytesToHexString(flowIdByte));
             //6、读取消息体
             if(hasSubPackage){
                 buffer.readBytes(4);
@@ -112,19 +114,19 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             buffer.getBytes(buffer.readerIndex(), body);
             buffer.readBytes(contentLen);
             message.setBody(body);
-            System.out.println("消息体 -> "+ByteUtil.bytesToHexString(body));
+//            System.out.println("消息体 -> "+ByteUtil.bytesToHexString(body));
 
             //7、读取校验码
             byte[] checkSum = new byte[1];
             buffer.getBytes(buffer.readerIndex(), checkSum);
             int checkSumInt = ByteUtil.byteToInteger(checkSum);
             buffer.readBytes(1);
-            System.out.println("校验码 -> "+ ByteUtil.bytesToHexString(checkSum));
+//            System.out.println("校验码 -> "+ ByteUtil.bytesToHexString(checkSum));
             //8、读取结束符
             byte[] endMark = new byte[1];
             buffer.getBytes(buffer.readerIndex(), endMark);
             buffer.readBytes(1);
-            System.out.println("结束符 -> "+ByteUtil.bytesToHexString(endMark));
+//            System.out.println("结束符 -> "+ByteUtil.bytesToHexString(endMark));
 
             int len = beginMark.length + msgId.length + prop.length + terminalPhone.length
                     + flowIdByte.length + body.length + checkSum.length + endMark.length;

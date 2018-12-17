@@ -16,7 +16,7 @@
             <level>info</level>
         </filter>
         <encoder>
-            <pattern>%date %level [%thread] [%file : %line] %msg%n
+            <pattern>%date %level [%thread] [%file : %line]  %msg%n
             </pattern>
         </encoder>
     </appender>
@@ -24,7 +24,7 @@
     <appender name="debug_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${path}/Debug/debug.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${path}/Debug/debug.log.%d{yyyy-MM-dd}-%i.zip</fileNamePattern>
+            <fileNamePattern>${path}/Debug/debug.log.%d{yyyy-MM-dd}.zip</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy
                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${maxFileSize}</maxFileSize>
@@ -45,7 +45,7 @@
     <appender name="info_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${path}/Info/info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${path}/Info/info.log.%d{yyyy-MM-dd}-%i.zip</fileNamePattern>
+            <fileNamePattern>${path}/Info/info.log.%d{yyyy-MM-dd}.zip</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy
                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${maxFileSize}</maxFileSize>
@@ -68,7 +68,7 @@
     <appender name="warn_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${path}/Warn/warn.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${path}/Warn/warn.log.%d{yyyy-MM-dd}-%i.zip</fileNamePattern>
+            <fileNamePattern>${path}/Warn/warn.log.%d{yyyy-MM-dd}.zip</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy
                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${maxFileSize}</maxFileSize>
@@ -90,7 +90,7 @@
     <appender name="error_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${path}/Error/error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${path}/Error/error.log.%d{yyyy-MM-dd}-%i.zip</fileNamePattern>
+            <fileNamePattern>${path}/Error/error.log.%d{yyyy-MM-dd}.zip</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy
                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${maxFileSize}</maxFileSize>
