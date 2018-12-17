@@ -4,8 +4,8 @@ import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.common.packet.Message;
-import com.zdzc.collector.sender.handler.BsjMessageHandler;
 import com.zdzc.collector.sender.coder.ToWrtMessageDecoder;
+import com.zdzc.collector.sender.handler.BsjMessageHandler;
 import com.zdzc.collector.sender.handler.JtMessageHandler;
 import com.zdzc.collector.sender.handler.WrtMessageHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -60,12 +60,13 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
                 BsjMessageHandler.handler(ctx, message);
             }
 
+            ReferenceCountUtil.safeRelease(msg);
         }catch (Exception e){
             logger.error(e.getMessage());
         }
-        finally {
-            ReferenceCountUtil.release(msg);
-        }
+//        finally {
+//            ReferenceCountUtil.release(msg);
+//        }
     }
 
     @Override
@@ -89,7 +90,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception {
-        logger.warn(cause.getMessage());
+        logger.warn(cause.toString());
     }
 
 }

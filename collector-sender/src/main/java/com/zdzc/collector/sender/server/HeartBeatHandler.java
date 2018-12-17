@@ -26,6 +26,7 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 // ctx.disconnect(); //Channel disconnect
                 log.info("READER_IDLE: read timeout from "
                         + ctx.channel().remoteAddress());
+                ctx.disconnect();
             } else if (event.state() == IdleState.WRITER_IDLE) {
                 log.info("--- Write Idle ---");
             } else if (event.state() == IdleState.ALL_IDLE) {
