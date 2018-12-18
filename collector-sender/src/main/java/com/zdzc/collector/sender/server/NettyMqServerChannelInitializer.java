@@ -29,7 +29,7 @@ public class NettyMqServerChannelInitializer extends
     public void initChannel(SocketChannel ch) throws Exception {
         String protocolType = Config.get("protocol.type");
         // Reader ilde time 3 minutes
-        ch.pipeline().addLast(new IdleStateHandler(5 * 60, 0, 0));
+//        ch.pipeline().addLast(new IdleStateHandler(5 * 60, 0, 0));
         ch.pipeline().addLast(new HeartBeatHandler());
         if(StringUtils.equals(protocolType, ProtocolType.JT808.getValue())){
             ch.pipeline().addLast(new JtProtocolDecoder());

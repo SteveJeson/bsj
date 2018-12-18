@@ -30,6 +30,7 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) {
+
         //数据包太大不处理，防止恶意流量攻击
         if (buffer.readableBytes() > SysConst.JTPROTOCOL_MAX_BYTES) {
             buffer.release();

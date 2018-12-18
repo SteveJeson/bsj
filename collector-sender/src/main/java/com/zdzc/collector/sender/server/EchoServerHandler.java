@@ -18,6 +18,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @Author liuwei
  * @Description TCP服务端处理类
@@ -29,6 +31,8 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     static ChannelGroup channels = new DefaultChannelGroup(
             GlobalEventExecutor.INSTANCE);
+
+    static AtomicInteger count = new AtomicInteger(0);
 
     public EchoServerHandler() {
 
@@ -73,13 +77,13 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // A closed channel will be removed from ChannelGroup automatically
         channels.add(ctx.channel());
-        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + channels.size());
+        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + count.incrementAndGet());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String channelId = ctx.channel().id().toString();
-        System.out.println("A client disconnected -> " + channelId + ", " + channels.size());
+        System.out.println("A client disconnected -> " + channelId + ", " + count.decrementAndGet());
         String value = WrtMessageHandler.channelMap.get(channelId);
         if(StringUtils.isNotEmpty(value)){
             WrtMessageHandler.channelMap.remove(channelId, value);
