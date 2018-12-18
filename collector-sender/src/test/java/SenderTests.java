@@ -1,7 +1,10 @@
 import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.utils.ByteUtil;
+import com.zdzc.collector.tcpclient.core.ClientPoolManager;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
 
 public class SenderTests {
 
@@ -13,5 +16,13 @@ public class SenderTests {
         int checkSum = MsgDecoder.calculateChecksum(arr, 1, arr.length -2);
 
         Assert.assertEquals(0xce, checkSum);
+    }
+
+    @Test
+    public void testTcp() throws InterruptedException, ExecutionException {
+        for(int i = 0;i < 20;i++){
+            ClientPoolManager.init("192.168.1.161", 10000, 100);
+            ClientPoolManager.channelPool.acquire().sync().get();
+        }
     }
 }

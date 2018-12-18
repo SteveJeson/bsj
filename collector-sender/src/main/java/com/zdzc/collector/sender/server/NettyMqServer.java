@@ -38,6 +38,10 @@ public class NettyMqServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new NettyMqServerChannelInitializer());
             b.option(ChannelOption.SO_BACKLOG, 128);
+            b.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
+                    .childOption(ChannelOption.SO_SNDBUF, 1024 * 256)
+                    .childOption(ChannelOption.SO_RCVBUF, 1024 * 32768)
+                    .childOption(ChannelOption.TCP_NODELAY, true);
             b.childOption(ChannelOption.SO_KEEPALIVE, false);
             b.childOption(ChannelOption.TCP_NODELAY, true);
             b.childOption(ChannelOption.SO_REUSEADDR, true);

@@ -5,7 +5,6 @@ import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.sender.coder.ToWrtMessageDecoder;
-import com.zdzc.collector.sender.handler.BsjMessageHandler;
 import com.zdzc.collector.sender.handler.JtMessageHandler;
 import com.zdzc.collector.sender.handler.WrtMessageHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,10 +28,11 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
 
-    private AtomicInteger NUM = new AtomicInteger(0);
 
     private ChannelGroup channels = new DefaultChannelGroup(
             GlobalEventExecutor.INSTANCE);
+
+    static AtomicInteger count = new AtomicInteger(0);
 
     public EchoServerHandler() {
 
@@ -77,13 +77,14 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // A closed channel will be removed from ChannelGroup automatically
         channels.add(ctx.channel());
-        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + NUM.incrementAndGet());
+        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + count.incrementAndGet());
+
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String channelId = ctx.channel().id().toString();
-        System.out.println("A client disconnected -> " + channelId + ", " + channels.size());
+        System.out.println("A client disconnected -> " + channelId + ", " + count.decrementAndGet());
         String value = WrtMessageHandler.channelMap.get(channelId);
         if(StringUtils.isNotEmpty(value)){
             WrtMessageHandler.channelMap.remove(channelId, value);

@@ -16,7 +16,7 @@ public class MessageHandler {
     public static void handler(List<Message> messageList) {
         for (Message message : messageList) {
             MqMessageHandler.handler(message);
-            ClientPoolManager.send(message.getAll());
+//            ClientPoolManager.send(message.getAll());
         }
     }
 
