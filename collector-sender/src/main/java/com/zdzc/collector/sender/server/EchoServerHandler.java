@@ -10,10 +10,7 @@ import com.zdzc.collector.sender.handler.JtMessageHandler;
 import com.zdzc.collector.sender.handler.WrtMessageHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
-
-    static ChannelGroup channels = new DefaultChannelGroup(
-            GlobalEventExecutor.INSTANCE);
 
     static AtomicInteger count = new AtomicInteger(0);
 
@@ -64,19 +58,18 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
                 BsjMessageHandler.handler(ctx, message);
             }
 
-            ReferenceCountUtil.safeRelease(msg);
         }catch (Exception e){
             logger.error(e.getMessage());
         }
-//        finally {
-//            ReferenceCountUtil.release(msg);
-//        }
+        finally {
+            ReferenceCountUtil.release(msg);
+        }
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // A closed channel will be removed from ChannelGroup automatically
-        channels.add(ctx.channel());
+//        channels.add(ctx.channel());
         System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + count.incrementAndGet());
     }
 
