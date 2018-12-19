@@ -2,10 +2,11 @@ package com.zdzc.collector.receiver.Consumer;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
+import com.zdzc.collector.receiver.coder.MsgDecoder;
 
 import java.io.IOException;
 
-public class Worker implements Runnable {
+public class Worker {
 
     private Channel channel;
 
@@ -16,18 +17,10 @@ public class Worker implements Runnable {
        this.queueName = queueName;
     }
 
-    private void doWork() throws IOException {
+    public void doWork() throws IOException {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String message = new String(delivery.getBody(), "UTF-8");
-
             try {
-                System.out.println(queueName + " -> " + message);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Thread.currentThread().interrupt();
-                }
+                MsgDecoder.decode(delivery.getBody());
             } finally {
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
@@ -36,12 +29,4 @@ public class Worker implements Runnable {
 
     }
 
-    @Override
-    public void run() {
-        try{
-            doWork();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
