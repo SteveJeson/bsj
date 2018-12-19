@@ -11,15 +11,16 @@ public class SocketClientHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel channel = ctx.channel();
 
-        ByteBuf buf = (ByteBuf)msg;
-        byte[] b = new byte[buf.readableBytes()];
-        buf.getBytes(buf.readerIndex(), b);
-        String result = new String(b, "utf-8");
-        System.out.println("receive server -> " + result);
-        int seq = 1;
+        ByteBuf responseBuf = (ByteBuf)msg;
+        responseBuf.markReaderIndex();
+
+        int length = responseBuf.readInt();
+        int seq = responseBuf.readInt();
+
+        responseBuf.resetReaderIndex();
 
         //获取消息对应的callback
         SocketClient.CallbackService callbackService = ChannelUtils.<SocketClient.CallbackService>removeCallback(channel, seq);
-        callbackService.receiveMessage(buf);
+        callbackService.receiveMessage(responseBuf);
     }
 }

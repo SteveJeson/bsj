@@ -17,6 +17,7 @@
         <module>collector-http-server</module>
         <module>simulator</module>
         <module>collector-receiver</module>
+        <module>collector-test</module>
         <module>collector-simulator</module>
     </modules>
 

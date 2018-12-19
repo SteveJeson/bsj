@@ -41,16 +41,14 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
         buffer.getBytes(buffer.readerIndex(), b);
         logger.debug("source data -> {}", ByteArrayUtil.toHexString(b));
         //先转义还原再做处理
-        byte[] bs =  MsgDecoder.doReceiveEscape(b);
-        buffer.clear();
-        buffer.writeBytes(bs);
+//        byte[] bs =  MsgDecoder.doReceiveEscape(b);
+//        buffer.clear();
+//        buffer.writeBytes(bs);
 
         while (buffer.isReadable()) {
             if(buffer.readableBytes() < headerLen){
                 return;
             }
-            Header header = new Header();
-            Message message = new Message();
             byte[] readable = new byte[buffer.readableBytes()];
             buffer.getBytes(buffer.readerIndex(), readable);
             String hexPacket = ByteUtil.bytesToHexString(readable);
@@ -73,6 +71,9 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
             if(buffer.readableBytes() < contentLen + headerLen + 3){
                 return;
             }
+
+            Header header = new Header();
+            Message message = new Message();
             //设置协议类型
             header.setProtocolType(ProtocolType.JT808.getValue());
             //读掉开始标识符的一个字节

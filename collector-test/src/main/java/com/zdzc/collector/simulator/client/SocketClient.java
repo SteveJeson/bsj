@@ -1,6 +1,5 @@
 package com.zdzc.collector.simulator.client;
 
-import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.zdzc.collector.simulator.pool.IntegerFactory;
 import com.zdzc.collector.simulator.pool.NettyChannelPool;
 import com.zdzc.collector.simulator.util.ChannelUtils;
@@ -25,7 +24,7 @@ public class SocketClient {
 
         final Map<String, String> resultsMap = new HashMap<>();
         //使用10个线程,并发的去获取netty channel
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 10; i++) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -50,12 +49,12 @@ public class SocketClient {
                         synchronized (callbackService) {
                             UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
                             ByteBuf buffer = allocator.buffer(20);
-//                            buffer.writeInt(ChannelUtils.MESSAGE_LENGTH);
+                            buffer.writeInt(ChannelUtils.MESSAGE_LENGTH);
 
-//                            buffer.writeInt(seq);
+                            buffer.writeInt(seq);
                             String threadName = Thread.currentThread().getName();
-                            String sendStr = "body" + threadName;
-                            buffer.writeBytes(sendStr.getBytes());
+                            buffer.writeBytes(threadName.getBytes());
+                            buffer.writeBytes("body".getBytes());
 
                             //给netty 服务端发送消息,异步的,该方法会立刻返回
                             channel.writeAndFlush(buffer);
@@ -64,20 +63,18 @@ public class SocketClient {
                             callbackService.wait();
 
                             //解析结果,这个result在callback中已经解析到了。
-//                            ByteBuf result = callbackService.result;
-//                            String rec = new String(result.array(), "utf-8");
-//                            resultsMap.put(threadName, rec);
-//                            int length = result.readInt();
-//                            int seqFromServer = result.readInt();
-//
-//                            byte[] head = new byte[8];
-//                            result.readBytes(head);
-//                            String headString = new String(head);
-//
-//                            byte[] body = new byte[4];
-//                            result.readBytes(body);
-//                            String bodyString = new String(body);
-//                            resultsMap.put(threadName, seqFromServer + headString + bodyString);
+                            ByteBuf result = callbackService.result;
+                            int length = result.readInt();
+                            int seqFromServer = result.readInt();
+
+                            byte[] head = new byte[8];
+                            result.readBytes(head);
+                            String headString = new String(head);
+
+                            byte[] body = new byte[4];
+                            result.readBytes(body);
+                            String bodyString = new String(body);
+                            resultsMap.put(threadName, seqFromServer + headString + bodyString);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -102,7 +99,6 @@ public class SocketClient {
         public void receiveMessage(ByteBuf receiveBuf) throws Exception {
             synchronized (this) {
                 result = receiveBuf;
-                System.out.println("callback -> " + new String(receiveBuf.array(), "utf-8"));
                 this.notify();
             }
         }
