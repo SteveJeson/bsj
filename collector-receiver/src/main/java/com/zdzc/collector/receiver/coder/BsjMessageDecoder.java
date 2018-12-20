@@ -161,6 +161,29 @@ public class BsjMessageDecoder {
 
     private static void decodeHeartBeat(byte[] data) {
         System.out.println("===收到心跳消息===");
+        //终端信息内容
+        byte[] terminalContent = ByteUtil.subByteArr(data, 11, 1);
+        System.out.println("终端信息内容 -> " + ByteArrayUtil.toHexString(terminalContent));
+        //电压等级
+        byte[] voltageGrade = ByteUtil.subByteArr(data, 12, 1);
+        System.out.println("电压等级 -> " + ByteArrayUtil.toHexString(voltageGrade));
+        //GSM信号强度
+        byte[] wifi = ByteUtil.subByteArr(data, 13, 1);
+        System.out.println("GSM信号强度 -> " + ByteArrayUtil.toHexString(wifi));
+        //语言
+        byte[] language = ByteUtil.subByteArr(data, 14, 2);
+        System.out.println("语言 -> " + ByteArrayUtil.toHexString(language));
+        //附加扩展
+        int count = data.length - 16 - 4;
+        if (count > 0) {
+            decodeExtenData(data, 16);
+        }
+        //序列号
+        byte[] seq = ByteUtil.subByteArr(data, 16 + count, 2);
+        System.out.println("序列号 -> " + ByteArrayUtil.toHexString(seq));
+        //错误校验
+        byte[] checkCode= ByteUtil.subByteArr(data, 16 + count + 2, 2);
+        System.out.println("错误校验 -> " + ByteArrayUtil.toHexString(checkCode));
     }
 
     private static void decodeExtenData(byte[] data, int from) {
