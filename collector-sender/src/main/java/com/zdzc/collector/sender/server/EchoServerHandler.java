@@ -1,9 +1,12 @@
 package com.zdzc.collector.sender.server;
 
+import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.zdzc.collector.common.coder.ToJtMessageDecoder;
 import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.common.packet.Message;
+import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.sender.coder.ToWrtMessageDecoder;
 import com.zdzc.collector.sender.handler.BsjMessageHandler;
 import com.zdzc.collector.sender.handler.JtMessageHandler;
@@ -38,24 +41,38 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
         Message message;
         if (StringUtils.equals(protocolType, ProtocolType.WRT.getValue())) {
             String dataStr = (String)msg;
-            System.out.println("source data -> " + dataStr);
             if(dataStr.indexOf(ProtocolSign.WRT_BEGINMARK.getValue()) != 0){
                 return;
             }
-            message = ToWrtMessageDecoder.decode(dataStr + ProtocolSign.WRT_ENDMARK.getValue());
+            String data = dataStr + ProtocolSign.WRT_ENDMARK.getValue();
+            logger.debug("source data -> {}", data);
+            message = ToWrtMessageDecoder.decode(data);
+        } else if (StringUtils.equals(protocolType, ProtocolType.JT808.getValue())) {
+            byte[] data = (byte[])msg;
+            String hex = ByteArrayUtil.toHexString(data);
+            if(data.length == 0 || StringUtils.equals(hex.toUpperCase(), ProtocolSign.JT808_BEGINMARK.getValue())){
+                return;
+            }
+            byte[] mark = ByteArrayUtil.hexStringToByteArray(ProtocolSign.JT808_BEGINMARK.getValue());
+            byte[] newData = ByteUtil.bytesMerge(mark, data);
+            logger.debug("source data -> {}", ByteArrayUtil.toHexString(newData));
+            message = ToJtMessageDecoder.decode(newData);
         } else {
-            message = (Message)msg;
+            message = (Message) msg;
         }
+
         try {
-            if(StringUtils.equals(ProtocolType.JT808.getValue(), message.getHeader().getProtocolType())){
-                //808
-                JtMessageHandler.handler(ctx, message);
-            }else if(StringUtils.equals(ProtocolType.WRT.getValue(), message.getHeader().getProtocolType())){
-                //wrt
-                WrtMessageHandler.handler(ctx, message);
-            }else if(StringUtils.equals(ProtocolType.BSJ.getValue(), message.getHeader().getProtocolType())){
-                //博实结
-                BsjMessageHandler.handler(ctx, message);
+            if (message != null) {
+                if(StringUtils.equals(ProtocolType.JT808.getValue(), message.getHeader().getProtocolType())){
+                    //808
+                    JtMessageHandler.handler(ctx, message);
+                }else if(StringUtils.equals(ProtocolType.WRT.getValue(), message.getHeader().getProtocolType())){
+                    //wrt
+                    WrtMessageHandler.handler(ctx, message);
+                }else if(StringUtils.equals(ProtocolType.BSJ.getValue(), message.getHeader().getProtocolType())){
+                    //博实结
+                    BsjMessageHandler.handler(ctx, message);
+                }
             }
 
         }catch (Exception e){

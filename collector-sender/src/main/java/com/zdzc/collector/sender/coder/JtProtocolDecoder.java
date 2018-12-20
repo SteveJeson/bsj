@@ -11,6 +11,7 @@ import com.zdzc.collector.common.utils.ByteUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +42,9 @@ public class JtProtocolDecoder extends ByteToMessageDecoder {
         buffer.getBytes(buffer.readerIndex(), b);
         logger.debug("source data -> {}", ByteArrayUtil.toHexString(b));
         //先转义还原再做处理
-//        byte[] bs =  MsgDecoder.doReceiveEscape(b);
-//        buffer.clear();
-//        buffer.writeBytes(bs);
+        byte[] bs =  MsgDecoder.doReceiveEscape(b);
+        buffer.clear();
+        buffer.writeBytes(bs);
 
         while (buffer.isReadable()) {
             if(buffer.readableBytes() < headerLen){

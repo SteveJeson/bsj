@@ -95,6 +95,7 @@ public class WrtMessageHandler {
             String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
             message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
+            logger.debug("[GPS] {} to queue -> {}", sendMsg, queueName);
         }else if (msgType == DataType.ALARM.getValue()){
             //报警
             alarmNum.incrementAndGet();
@@ -104,6 +105,7 @@ public class WrtMessageHandler {
             String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
             message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
+            logger.debug("[ALARM] {} to queue -> {}", sendMsg, queueName);
         }else if (msgType == DataType.HEARTBEAT.getValue()){
             //心跳
             heartbeatNum.incrementAndGet();
@@ -113,6 +115,7 @@ public class WrtMessageHandler {
             String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
             message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
+            logger.debug("[HEARTBEAT] {} to queue -> {}", sendMsg, queueName);
         }else if (msgType == DataType.CONTROLLER.getValue()){
             //控制器
             controllerNum.incrementAndGet();
@@ -122,6 +125,7 @@ public class WrtMessageHandler {
             String body = new String(message.getBody(), SysConst.DEFAULT_ENCODING);
             String sendMsg = ProtocolType.WRT.getValue() + message.getHeader().getTerminalPhone() + body;
             message.setSendBody(sendMsg.getBytes(Charset.forName(SysConst.DEFAULT_ENCODING)));
+            logger.debug("[CONTROLLER] {} to queue -> {}", sendMsg, queueName);
         }
         MqSender.send(channel, message, queueName);
     }
