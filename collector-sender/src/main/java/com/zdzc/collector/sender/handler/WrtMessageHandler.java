@@ -1,11 +1,13 @@
 package com.zdzc.collector.sender.handler;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.DeliverCallback;
 import com.zdzc.collector.common.jconst.Command;
 import com.zdzc.collector.common.jconst.SysConst;
 import com.zdzc.collector.common.jenum.DataType;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Message;
+import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.rabbitmq.core.MqSender;
 import com.zdzc.collector.rabbitmq.init.MqInitializer;
 import io.netty.buffer.Unpooled;
@@ -14,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -70,7 +73,7 @@ public class WrtMessageHandler {
         message.getHeader().setTerminalPhone(deviceCode);
         toSendWrtMessage(message);
         List<String> replyCmd = Arrays.asList(Command.MSG_GPS_INTERVAL_RESP, Command.MSG_DEFENCE_RESP, Command.MSG_POWER_STOP_RESP,
-                Command.MSG_POWER_RECOVER_RESP, Command.MSG_OVERSPEED_RESP, Command.MSG_HEART_INTERVAL_RESP, Command.MSG_IP_RESP);
+                Command.MSG_POWER_RECOVER_RESP, Command.MSG_OVERSPEED_RESP, Command.MSG_HEART_INTERVAL_RESP, Command.MSG_IP_RESP, Command.WRT_CMD_CONTROLLER_RESP);
         if(replyCmd.contains(message.getHeader().getMsgIdStr())){
             message.setSendBody(message.getAll().getBytes());
             MqSender.send(MqInitializer.replyChannel, message, MqInitializer.wrtCmdReplyQueueName);
@@ -128,6 +131,24 @@ public class WrtMessageHandler {
             logger.debug("[CONTROLLER] {} to queue -> {}", sendMsg, queueName);
         }
         MqSender.send(channel, message, queueName);
+    }
+
+    public void consume() throws IOException {
+        Channel channel = MqInitializer.wrtCmdChannel;
+        String queueName = MqInitializer.wrtCmdQueueName;
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            byte[] body = delivery.getBody();
+            byte[] deviceCodeBytes = ByteUtil.subByteArr(body, 0, 15);
+            //下发指令给设备
+            String deviceCodeStr = new String(deviceCodeBytes,
+                    SysConst.DEFAULT_ENCODING);
+            byte[] cmd = ByteUtil.subByteArr(body, 15, body.length - deviceCodeBytes.length);
+            String channelId = channelMap.get(deviceCodeStr);
+
+            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+        };
+        channel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
+
     }
 
 }

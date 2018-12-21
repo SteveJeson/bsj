@@ -111,6 +111,8 @@ public class MqInitializer {
 
     public static int wrtControllerQueueStart = Config.getInt("wrt.controller.queue.start", 0);
 
+    public static String wrtCmdQueueName = Config.get("wrt.command.queue.name");
+
     public static String wrtCmdReplyQueueName = Config.get("wrt.command.queue.reply.name");
 
     public static String bsjLoginQueueName = Config.get("bsj.login.queue.name");
@@ -148,6 +150,8 @@ public class MqInitializer {
     public static Channel bsjAlarmChannel;
 
     public static Channel bsjHeartbeatChannel;
+
+    public static Channel wrtCmdChannel;
 
     public static Channel replyChannel;
 
@@ -229,7 +233,8 @@ public class MqInitializer {
             logger.info("create CONTROLLER connection -> {}", i+1);
             createQueues(factory.newConnection(), wrtControllerQueuePrefix, wrtControllerChannelCount, wrtControllerQueueCount, wrtControllerQueueStart, wrtControllerChannels);
         }
-        createQueues(factory.newConnection(), wrtCmdReplyQueueName);
+        createQueues(factory.newConnection(), wrtCmdReplyQueueName, replyChannel);
+        createQueues(factory.newConnection(), wrtCmdQueueName, wrtCmdChannel);
     }
 
     /**
@@ -298,12 +303,12 @@ public class MqInitializer {
      * @param connection
      * @param queueName
      */
-    public static void createQueues(Connection connection, String queueName){
+    public static void createQueues(Connection connection, String queueName, Channel channel){
         try {
-            replyChannel = connection.createChannel();
-            replyChannel.queueDeclare(queueName, true, false, false, null);
+            channel = connection.createChannel();
+            channel.queueDeclare(queueName, true, false, false, null);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error(e.toString());
         }
     }
 

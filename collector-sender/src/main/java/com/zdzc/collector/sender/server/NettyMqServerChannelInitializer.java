@@ -4,7 +4,6 @@ import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
-import com.zdzc.collector.sender.coder.JtProtocolDecoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
@@ -12,10 +11,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.bytes.ByteArrayDecoder;
 import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.commons.lang.StringUtils;
-
-import java.nio.ByteBuffer;
 
 /**
  * @Author liuwei
