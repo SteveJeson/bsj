@@ -22,7 +22,7 @@ public class Worker {
             try {
                 MsgDecoder.decode(delivery.getBody());
             } finally {
-                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+//                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
         };
         channel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
