@@ -174,6 +174,11 @@ public class Command {
     public static final String MSG_IP_RESP = "AP64";
 
     /**
+     * 控制器下发指令回复
+     */
+    public static final String WRT_CMD_CONTROLLER_RESP = "AP91";
+
+    /**
      * HTTP请求参数单个数据标识
      */
     public static final String HTTP_DATA_SINGLE = "deviceDataChanged";
