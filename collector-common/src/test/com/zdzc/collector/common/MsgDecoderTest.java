@@ -2,9 +2,11 @@ package com.zdzc.collector.common;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.zdzc.collector.common.coder.MsgDecoder;
+import com.zdzc.collector.common.utils.ByteUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class MsgDecoderTest {
@@ -54,4 +56,21 @@ public class MsgDecoderTest {
         Assert.assertEquals(list.size(), 0);
     }
 
+    @Test
+    public void decodeLatOrLon() {
+        String hex = "026B3F3E";
+        byte[] latByte = ByteArrayUtil.hexStringToByteArray(hex);
+        double lat = MsgDecoder.decodeLatOrLon(latByte);
+        DecimalFormat df = new DecimalFormat("#.0");
+        boolean result = df.format(lat * 1000000).contains("22546096");
+        Assert.assertTrue(result);
+    }
+
+    @Test
+    public void test() {
+        byte[] arr = {(byte)0x10};
+        double speed = ByteUtil.byteToInteger(arr);
+        double result = 160;
+        Assert.assertEquals(result, speed * 10, 0.01);
+    }
 }

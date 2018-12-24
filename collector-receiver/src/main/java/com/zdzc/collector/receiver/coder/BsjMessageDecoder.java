@@ -1,9 +1,19 @@
 package com.zdzc.collector.receiver.coder;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.sun.prism.shader.Solid_TextureRGB_AlphaTest_Loader;
+import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
 import com.zdzc.collector.common.utils.ByteUtil;
+import com.zdzc.collector.common.utils.DateUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang.time.DateUtils;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class BsjMessageDecoder {
 
@@ -62,35 +72,33 @@ public class BsjMessageDecoder {
     private static void decodeLocation(byte[] data) {
         System.out.println("===收到定位消息===");
         //日期时间
-        byte[] date = ByteUtil.subByteArr(data, 11, 6);
-        System.out.println("日期时间 -> " + ByteArrayUtil.toHexString(date));
+        byte[] dateBytes = ByteUtil.subByteArr(data, 11, 6);
+        Date date = decodeDateTime(dateBytes);
+        String dateStr = DateFormatUtils.format(date, "20yy年MM月dd日HH时mm分ss秒");
+        System.out.println("日期时间 -> " + dateStr);
         //GPS信息卫星
-        byte[] satellite = ByteUtil.subByteArr(data, 17, 1);
-        System.out.println("GPS信息卫星 -> " + ByteArrayUtil.toHexString(satellite));
+        byte[] satNumBytes = ByteUtil.subByteArr(data, 17, 1);
+        int satNum = decodeSatelliteNum(satNumBytes);
+        System.out.println("GPS定位卫星数 -> " + satNum);
         //纬度
         byte[] lat = ByteUtil.subByteArr(data, 18, 4);
-        System.out.println("纬度 -> " + ByteArrayUtil.toHexString(lat));
+        double latDouble = MsgDecoder.decodeLatOrLon(lat) * 1000000;
+        System.out.println("纬度 -> " + latDouble);
         //经度
         byte[] lon = ByteUtil.subByteArr(data, 22, 4);
-        System.out.println("经度 -> " + ByteArrayUtil.toHexString(lon));
+        double lonDouble = MsgDecoder.decodeLatOrLon(lon) * 1000000;
+        System.out.println("经度 -> " + lonDouble);
         //速度
         byte[] speed = ByteUtil.subByteArr(data, 26, 1);
-        System.out.println("速度 -> " + ByteArrayUtil.toHexString(speed));
+        double speedDouble = ByteUtil.byteToInteger(speed) * 10;
+        System.out.println("速度 -> " + speedDouble);
         //航向、状态
-        byte[] status = ByteUtil.subByteArr(data, 27, 2);
-        System.out.println("航向、状态 -> " + ByteArrayUtil.toHexString(status));
-        //LBS
-        byte[] lbs = ByteUtil.subByteArr(data, 29, 8);
-        System.out.println("lbs -> " + ByteArrayUtil.toHexString(lbs));
-        //保留位
-        byte[] temp = ByteUtil.subByteArr(data, 37, 1);
-        System.out.println("保留位 -> " + ByteArrayUtil.toHexString(temp));
-        //数据上报模式
-        byte[] dataMode = ByteUtil.subByteArr(data, 38, 1);
-        System.out.println("数据上报模式 -> " + ByteArrayUtil.toHexString(dataMode));
+        byte[] directionByte = ByteUtil.subByteArr(data, 27, 2);
+        int directionInt = decodeDirection(directionByte);
+        System.out.println("航向、状态(方向) -> " + directionInt);
         //GPS实时补传
-        byte[] gpsFill = ByteUtil.subByteArr(data, 39, 1);
-        System.out.println("GPS实时补传 -> " + ByteArrayUtil.toHexString(gpsFill));
+        int gpsFill = ByteUtil.cutBytesToInt(data, 39, 1);
+        System.out.println("GPS实时补传 -> " + gpsFill);
 
         int count = data.length - 40 - 4;
         if (count > 0) {
@@ -109,41 +117,36 @@ public class BsjMessageDecoder {
     private static void decodeAlarm(byte[] data) {
         System.out.println("===收到报警消息");
         //日期时间
-        byte[] date = ByteUtil.subByteArr(data, 11, 6);
-        System.out.println("日期时间 -> " + ByteArrayUtil.toHexString(date));
+        byte[] dateBytes = ByteUtil.subByteArr(data, 11, 6);
+        Date date = decodeDateTime(dateBytes);
+        String dateStr = DateFormatUtils.format(date, "20yy年MM月dd日HH时mm分ss秒");
+        System.out.println("日期时间 -> " + dateStr);
         //GPS信息长度+卫星数
-        byte[] gpsLenAndSatNum = ByteUtil.subByteArr(data, 17, 1);
-        System.out.println("GPS信息长度+卫星数 -> " + ByteArrayUtil.toHexString(gpsLenAndSatNum));
+        byte[] satNumBytes = ByteUtil.subByteArr(data, 17, 1);
+        int satNum = decodeSatelliteNum(satNumBytes);
+        System.out.println("GPS定位卫星数 -> " + satNum);
         //纬度
         byte[] lat = ByteUtil.subByteArr(data, 18, 4);
-        System.out.println("纬度 -> " + ByteArrayUtil.toHexString(lat));
+        double latDouble = MsgDecoder.decodeLatOrLon(lat) * 1000000;
+        System.out.println("纬度 -> " + latDouble);
         //经度
         byte[] lon = ByteUtil.subByteArr(data, 22, 4);
-        System.out.println("经度 -> " + ByteArrayUtil.toHexString(lon));
+        double lonDouble = MsgDecoder.decodeLatOrLon(lon) * 1000000;
+        System.out.println("经度 -> " + lonDouble);
         //速度
         byte[] speed = ByteUtil.subByteArr(data, 26, 1);
-        System.out.println("速度 -> " + ByteArrayUtil.toHexString(speed));
-        //航向、状态
-        byte[] status = ByteUtil.subByteArr(data, 27, 2);
-        System.out.println("航向、状态 -> " + ByteArrayUtil.toHexString(status));
-        //LBS长度
-        byte[] lbsLen = ByteUtil.subByteArr(data, 29, 1);
-        System.out.println("LBS长度 -> " + ByteArrayUtil.toHexString(lbsLen));
-        //LBS信息
-        byte[] lbs = ByteUtil.subByteArr(data, 30, 8);
-        System.out.println("lbs -> " + ByteArrayUtil.toHexString(lbs));
-        //终端信息内容
-        byte[] terminalContent = ByteUtil.subByteArr(data, 38, 1);
-        System.out.println("终端信息内容 -> " + ByteArrayUtil.toHexString(terminalContent));
+        double speedDouble = ByteUtil.byteToInteger(speed) * 10;
+        System.out.println("速度 -> " + speedDouble);
+        //航向、状态 -> 方向角
+        byte[] directionByte = ByteUtil.subByteArr(data, 27, 2);
+        int directionInt = decodeDirection(directionByte);
+        System.out.println("航向、状态(方向) -> " + directionInt);
         //电压等级
-        byte[] voltageGrade = ByteUtil.subByteArr(data, 39, 1);
-        System.out.println("电压等级 -> " + ByteArrayUtil.toHexString(voltageGrade));
+        int voltageGrade = ByteUtil.cutBytesToInt(data, 39, 1);
+        System.out.println("电压等级 -> " + voltageGrade);
         //GPS信号强度
-        byte[] wifi = ByteUtil.subByteArr(data, 40, 1);
-        System.out.println("GPS信号强度 -> " + ByteArrayUtil.toHexString(wifi));
-        //语言
-        byte[] language = ByteUtil.subByteArr(data, 41, 2);
-        System.out.println("语言 -> " + ByteArrayUtil.toHexString(language));
+        int wifi = ByteUtil.cutBytesToInt(data, 40, 1);
+        System.out.println("GPS信号强度等级 -> " + wifi);
 
         int count = data.length - 43 - 4;
         if (count > 0) {
@@ -161,18 +164,12 @@ public class BsjMessageDecoder {
 
     private static void decodeHeartBeat(byte[] data) {
         System.out.println("===收到心跳消息===");
-        //终端信息内容
-        byte[] terminalContent = ByteUtil.subByteArr(data, 11, 1);
-        System.out.println("终端信息内容 -> " + ByteArrayUtil.toHexString(terminalContent));
         //电压等级
-        byte[] voltageGrade = ByteUtil.subByteArr(data, 12, 1);
-        System.out.println("电压等级 -> " + ByteArrayUtil.toHexString(voltageGrade));
+        int voltageGrade = ByteUtil.cutBytesToInt(data, 12, 1);
+        System.out.println("电压等级 -> " + voltageGrade);
         //GSM信号强度
-        byte[] wifi = ByteUtil.subByteArr(data, 13, 1);
-        System.out.println("GSM信号强度 -> " + ByteArrayUtil.toHexString(wifi));
-        //语言
-        byte[] language = ByteUtil.subByteArr(data, 14, 2);
-        System.out.println("语言 -> " + ByteArrayUtil.toHexString(language));
+        int wifi = ByteUtil.cutBytesToInt(data, 13, 1);
+        System.out.println("GSM信号强度等级 -> " + wifi);
         //附加扩展
         int count = data.length - 16 - 4;
         if (count > 0) {
@@ -196,8 +193,64 @@ public class BsjMessageDecoder {
             byte[] extenMsgId = ByteUtil.subByteArr(data, i + 2, 2);
             System.out.println("扩展指令 -> " + ByteArrayUtil.toHexString(extenMsgId));
             //扩展数据
-            byte[] extenData = ByteUtil.subByteArr(data, i + 4, extenLen - 4);
+            byte[] extenData = ByteUtil.subByteArr(data, i + 4, extenLen - extenMsgId.length);
             System.out.println("扩展数据 -> " +ByteArrayUtil.toHexString(extenData));
         }
     }
+
+    /**
+     * 解析方向角 0~360 正北为0 顺时针
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/24 15:57
+     */
+    private static int decodeDirection(byte[] hexBytes) {
+        String hexStr = ByteArrayUtil.toHexString(hexBytes);
+        String biStr = ByteUtil.hexStrToBinary16(hexStr);
+        String reverse = StringUtils.reverse(biStr);
+        String subStr = reverse.substring(0, 10);
+        int direction = Integer.parseInt(StringUtils.reverse(subStr), 2);
+        return direction;
+    }
+
+    /**
+     * 解析定位卫星数量
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/24 16:25
+     */
+    private static int decodeSatelliteNum(byte[] hexBytes) {
+        String srcStr = ByteArrayUtil.toHexString(hexBytes);
+        char[] chars = srcStr.toCharArray();
+        char second = chars[1];
+        int satelliteNum = Integer.parseInt(String.valueOf(second), 16);
+        return satelliteNum;
+    }
+
+    public static Date decodeDateTime(byte[] hexBytes) {
+        if (hexBytes.length < 6) {
+            return null;
+        }
+        byte yearByte = hexBytes[0];
+        byte monthByte = hexBytes[1];
+        byte dayByte = hexBytes[2];
+        byte hourByte = hexBytes[3];
+        byte minuteByte = hexBytes[4];
+        byte secondByte = hexBytes[5];
+
+        int year = ByteUtil.oneByteToInteger(yearByte);
+        int month = ByteUtil.oneByteToInteger(monthByte);
+        int day = ByteUtil.oneByteToInteger(dayByte);
+        int hour = ByteUtil.oneByteToInteger(hourByte);
+        int minute = ByteUtil.oneByteToInteger(minuteByte);
+        int second = ByteUtil.oneByteToInteger(secondByte);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month-1, day, hour, minute, second);
+        Date date = calendar.getTime();
+        return date;
+    }
+
 }

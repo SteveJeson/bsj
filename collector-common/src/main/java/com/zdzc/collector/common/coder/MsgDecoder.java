@@ -1,5 +1,6 @@
 package com.zdzc.collector.common.coder;
 
+import com.zdzc.collector.common.utils.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,6 +141,18 @@ public class MsgDecoder {
             logger.warn("unknown message: " + info);
         }
         return messages;
+    }
+
+    /**
+     * description 
+     * @author liuwei
+     * @return 博实结协议经纬度计算公司
+     * @exception
+     * @date 2018/12/24 14:34
+     */
+    public static double decodeLatOrLon(byte[] latOrLon) {
+         int latOrLonInt = ByteUtil.fourBytesToInteger(latOrLon);
+         return Double.valueOf(latOrLonInt)/(30000 * 60);
     }
 
 }

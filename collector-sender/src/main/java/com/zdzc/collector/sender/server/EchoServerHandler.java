@@ -10,6 +10,7 @@ import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.sender.coder.ToWrtMessageDecoder;
 import com.zdzc.collector.sender.handler.JtMessageHandler;
 import com.zdzc.collector.sender.handler.WrtMessageHandler;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
@@ -110,6 +111,10 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception {
         logger.warn(cause.toString());
+        Channel channel = ctx.channel();
+        if(channel.isActive()){
+            ctx.close();
+        }
     }
 
 }
