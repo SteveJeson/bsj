@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +37,7 @@ public class WrtMessageHandler {
     private static AtomicInteger heartbeatNum = new AtomicInteger(0);
     private static AtomicInteger controllerNum = new AtomicInteger(0);
 
-    public static ConcurrentHashMap<String, String> channelMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, Object> channelMap = new ConcurrentHashMap<>();
 
     public static void handler(ChannelHandlerContext ctx, Message message) throws Exception {
         String channelId = ctx.channel().id().toString();
@@ -54,18 +53,16 @@ public class WrtMessageHandler {
         if(StringUtils.equals(Command.WRT_MSG_ID_LOGIN, message.getHeader().getMsgIdStr())){
             String terminalPhone = message.getHeader().getTerminalPhone();
             if(!channelMap.containsKey(terminalPhone)){
-                channelMap.put(terminalPhone, channelId);
-                logger.info("saved key value -> {} : {}", terminalPhone, channelId);
+                channelMap.put(terminalPhone, ctx.channel());
             }
 
             if(!channelMap.containsKey(channelId)){
                 channelMap.put(channelId, terminalPhone);
-                logger.info("saved key value -> {} : {}", channelId, terminalPhone);
             }
             return;
         }
 
-        String deviceCode = channelMap.get(channelId);
+        String deviceCode = channelMap.get(channelId).toString();
         if(StringUtils.isEmpty(deviceCode)){
             logger.warn("没有登录 -> {}", message.getAll());
             return;
@@ -133,21 +130,38 @@ public class WrtMessageHandler {
         MqSender.send(channel, message, queueName);
     }
 
-    public void consume() throws IOException {
-        Channel channel = MqInitializer.wrtCmdChannel;
-        String queueName = MqInitializer.wrtCmdQueueName;
-        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            byte[] body = delivery.getBody();
-            byte[] deviceCodeBytes = ByteUtil.subByteArr(body, 0, 15);
-            //下发指令给设备
-            String deviceCodeStr = new String(deviceCodeBytes,
-                    SysConst.DEFAULT_ENCODING);
-            byte[] cmd = ByteUtil.subByteArr(body, 15, body.length - deviceCodeBytes.length);
-            String channelId = channelMap.get(deviceCodeStr);
+    /**
+     * 下发指令消费者
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 14:53
+     */
+    public static void consume() {
+        try{
+            Channel channel = MqInitializer.wrtCmdChannel;
+            String queueName = MqInitializer.wrtCmdQueueName;
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                byte[] body = delivery.getBody();
+                byte[] deviceCodeBytes = ByteUtil.subByteArr(body, 0, 15);
+                //下发指令给设备
+                String deviceCodeStr = new String(deviceCodeBytes,
+                        SysConst.DEFAULT_ENCODING);
+                byte[] cmd = ByteUtil.subByteArr(body, 15, body.length - deviceCodeBytes.length);
 
-            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-        };
-        channel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
+                io.netty.channel.Channel nettyChannel = (io.netty.channel.Channel) channelMap.get(deviceCodeStr);
+                if (nettyChannel == null) {
+                    logger.warn("no channel matched to device -> {}", deviceCodeStr);
+                    return;
+                }
+                nettyChannel.writeAndFlush(cmd);
+
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            };
+            channel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
+        }catch (Exception e) {
+            logger.error(e.toString());
+        }
 
     }
 

@@ -95,10 +95,10 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String channelId = ctx.channel().id().toString();
         System.out.println("A client disconnected -> " + channelId + ", " + count.decrementAndGet());
-        String value = WrtMessageHandler.channelMap.get(channelId);
+        String value = WrtMessageHandler.channelMap.get(channelId).toString();
         if(StringUtils.isNotEmpty(value)){
             WrtMessageHandler.channelMap.remove(channelId, value);
-            WrtMessageHandler.channelMap.remove(value, channelId);
+            WrtMessageHandler.channelMap.remove(value, ctx.channel());
         }
     }
 
