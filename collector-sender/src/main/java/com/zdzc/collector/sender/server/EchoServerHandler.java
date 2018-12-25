@@ -18,6 +18,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @Author liuwei
  * @Description TCP服务端处理类
@@ -27,7 +29,9 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
 
-    static ChannelGroup channels = new DefaultChannelGroup(
+    private AtomicInteger NUM = new AtomicInteger(0);
+
+    private ChannelGroup channels = new DefaultChannelGroup(
             GlobalEventExecutor.INSTANCE);
 
     public EchoServerHandler() {
@@ -57,7 +61,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
                 WrtMessageHandler.handler(ctx, message);
             }else if(StringUtils.equals(ProtocolType.BSJ.getValue(), message.getHeader().getProtocolType())){
                 //博实结
-                BsjMessageHandler.handler(ctx, message);
+//                BsjMessageHandler.handler(ctx, message);
             }
 
         }catch (Exception e){
@@ -72,7 +76,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // A closed channel will be removed from ChannelGroup automatically
         channels.add(ctx.channel());
-        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + channels.size());
+        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + NUM.incrementAndGet());
     }
 
     @Override

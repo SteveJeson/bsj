@@ -7,6 +7,7 @@ import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Header;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.common.utils.CrcItu16;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ import java.util.Arrays;
 /**
  * 博实结协议解析类
  */
-public class ToBsjMessageDecoder {
+public class ToBsjMessageDecoder{
     private static final Logger logger = LoggerFactory.getLogger(ToBsjMessageDecoder.class);
 
     /**
@@ -29,7 +30,7 @@ public class ToBsjMessageDecoder {
         //消息未粘包
         if (hexStr != null && hexStr.startsWith(ProtocolSign.BSJ_BEGINMARK.getValue())
                 && hexStr.endsWith(ProtocolSign.BSJ_ENDMARK.getValue())
-                && !hexStr.contains(ProtocolSign.BSJ_BEGINMARK.getValue() + ProtocolSign.BSJ_ENDMARK.getValue())){
+                && !hexStr.contains(ProtocolSign.BSJ_ENDMARK.getValue() + ProtocolSign.BSJ_BEGINMARK.getValue())){
             return decodeMessage(data);
         }else if (hexStr.contains(ProtocolSign.BSJ_BEGINMARK.getValue() + ProtocolSign.BSJ_ENDMARK.getValue())){
             //消息粘包
@@ -56,7 +57,6 @@ public class ToBsjMessageDecoder {
         //设置消息头
         Header header = new Header();
         header.setProtocolType(ProtocolType.BSJ.getValue());
-        header.setTerminalPhone(hexStr.substring(8, 24));
         Message message = new Message();
         //设置消息头
         message.setHeader(header);
@@ -83,15 +83,19 @@ public class ToBsjMessageDecoder {
         if (serverCheckCode.equals(checkCode)) {
             if (protocolNum.equals(Command.BSJ_MSG_LOGIN)) {
                 message.getHeader().setMsgIdStr(Command.BSJ_MSG_LOGIN);
+                message.getHeader().setTerminalPhone(hexStr.substring(8, 24));
                 message.setReplyBody(StringUtil.decodeHexDump(generateReply(Command.BSJ_MSG_LOGIN, serialNum)));
+                logger.info("login msg: " + hexStr);
             } else if (protocolNum.equals(Command.BSJ_MSG_ALARM)) {
                 message.getHeader().setMsgIdStr(Command.BSJ_MSG_ALARM);
                 message.setReplyBody(StringUtil.decodeHexDump(generateReply(Command.BSJ_MSG_ALARM, serialNum)));
             } else if (protocolNum.equals(Command.BSJ_MSG_HEARTBEAT)) {
                 message.getHeader().setMsgIdStr(Command.BSJ_MSG_HEARTBEAT);
                 message.setReplyBody(StringUtil.decodeHexDump(generateReply(Command.BSJ_MSG_HEARTBEAT, serialNum)));
+                logger.info("heartbeat msg: " + hexStr);
             } else if (protocolNum.equals(Command.BSJ_MSG_LOCATION)){
                 message.getHeader().setMsgIdStr(Command.BSJ_MSG_LOCATION);
+                logger.info("location msg: " + hexStr);
             }
         }else {
             logger.error("验证码错误：" + hexStr);

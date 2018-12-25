@@ -13,5 +13,8 @@ import org.slf4j.LoggerFactory;
 public class BsjMshDecoder {
     private static final Logger logger = LoggerFactory.getLogger(BsjMshDecoder.class);
 
-
+//    public static Message decode(byte[] data){
+//        String hexStr = StringUtil.toHexStringPadded(data).toUpperCase();
+//
+//    }
 }

@@ -4,12 +4,18 @@ import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.sender.coder.JtProtocolDecoder;
+import com.zdzc.collector.sender.handler.BsjMessageHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.bytes.ByteArrayDecoder;
+import io.netty.handler.codec.bytes.ByteArrayEncoder;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.commons.lang.StringUtils;
 
@@ -33,13 +39,21 @@ public class NettyMqServerChannelInitializer extends
         ch.pipeline().addLast(new HeartBeatHandler());
         if(StringUtils.equals(protocolType, ProtocolType.JT808.getValue())){
             ch.pipeline().addLast(new JtProtocolDecoder());
+            ch.pipeline().addLast(new EchoServerHandler());
         } else if (StringUtils.equals(protocolType, ProtocolType.WRT.getValue())) {
             ByteBuf delimiter = Unpooled.copiedBuffer(ProtocolSign.WRT_ENDMARK.getValue().getBytes());
             ch.pipeline().addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
             ch.pipeline().addLast(new StringDecoder());
+            ch.pipeline().addLast(new EchoServerHandler());
+        } else if (StringUtils.equals(protocolType, ProtocolType.BSJ.getValue())){
+//            ch.pipeline().addLast(new ToMessageDecoder());
+//            ch.pipeline().addLast(new ObjectEncoder());
+            ch.pipeline().addLast(new ByteArrayDecoder());
+            ch.pipeline().addLast(new BsjMessageHandler());
         } else {
             ch.pipeline().addLast(new ToMessageDecoder());
         }
-        ch.pipeline().addLast(new EchoServerHandler());
+//        ch.pipeline().addLast(new EchoServerHandler());
+
     }
 }

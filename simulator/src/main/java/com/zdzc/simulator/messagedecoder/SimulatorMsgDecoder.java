@@ -21,19 +21,19 @@ public class SimulatorMsgDecoder extends MessageToMessageDecoder{
 
     @Override
     protected void decode(ChannelHandlerContext ctx, Object msg, List list) throws Exception {
-        ByteBuf in = (ByteBuf)msg;
-        byte[] arr = new byte[in.readableBytes()];
-        if(!in.hasArray()){
-            in.getBytes(in.readerIndex(), arr);
-        }
-        String[] marks = {ProtocolSign.BSJ_BEGINMARK.getValue()};
-        String bsjBeginMark = ByteUtil.bytesToHexString(ByteUtil.subByteArr(arr, 0, 2));
-
-        if (marks[0].equals(bsjBeginMark)){
-            //博实结协议
-
-        }else {
-            logger.warn("位置协议内容：" + ByteUtil.bytesToHexString(arr));
-        }
+//        ByteBuf in = (ByteBuf)msg;
+//        byte[] arr = new byte[in.readableBytes()];
+//        if(!in.hasArray()){
+//            in.getBytes(in.readerIndex(), arr);
+//        }
+//        String[] marks = {ProtocolSign.BSJ_BEGINMARK.getValue()};
+//        String bsjBeginMark = ByteUtil.bytesToHexString(ByteUtil.subByteArr(arr, 0, 2));
+//
+//        if (marks[0].equals(bsjBeginMark)){
+//            //博实结协议
+//
+//        }else {
+//            logger.warn("位置协议内容：" + ByteUtil.bytesToHexString(arr));
+//        }
     }
 }
