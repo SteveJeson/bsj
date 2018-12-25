@@ -215,4 +215,29 @@ public class Command {
      */
     public static final String BSJ_MSG_RETURN_LENGTH = "05";
 
+    /**
+     * 博实结扩展数据 -> ICCID
+     */
+    public static final int BSJ_EXTENTION_ICCID = 0x00B2;
+
+    /**
+     * 博实结扩展数据 -> 状态信息
+     */
+    public static final int BSJ_EXTENTION_STATUS_INFO = 0x00C7;
+
+    /**
+     * 博实结扩展数据 -> 报警信息
+     */
+    public static final int BSJ_EXTENTION_ALARM_INFO = 0x00C8;
+
+    /**
+     * 博实结扩展数据 -> 里程信息
+     */
+    public static final int BSJ_EXTENTION_MILE_INFO = 0x00C9;
+
+    /**
+     * 博实结扩展数据 -> 主电源电压
+     */
+    public static final int BSJ_EXTENTION_VOLTAGE_INFO = 0x00CA;
+
 }

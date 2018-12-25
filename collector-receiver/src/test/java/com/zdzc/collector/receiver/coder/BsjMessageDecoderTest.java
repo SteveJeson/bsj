@@ -1,8 +1,10 @@
 package com.zdzc.collector.receiver.coder;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.sun.org.apache.xerces.internal.impl.io.ASCIIReader;
 import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.common.utils.DateUtil;
+import com.zdzc.collector.receiver.entity.BsjProtocol;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -70,4 +72,5 @@ public class BsjMessageDecoderTest {
         System.out.println("b -> " + b);
         System.out.println(a==b);
     }
+
 }

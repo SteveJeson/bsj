@@ -1,32 +1,46 @@
 package com.zdzc.collector.receiver.coder;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
-import com.sun.prism.shader.Solid_TextureRGB_AlphaTest_Loader;
 import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
+import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.utils.ByteUtil;
-import com.zdzc.collector.common.utils.DateUtil;
+import com.zdzc.collector.receiver.entity.BsjProtocol;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * 博实结协议解析类
+ * @Author liuwei
+ * @Description
+ * @Date 2018/12/25 10:30
+ */
 public class BsjMessageDecoder {
 
-    public static void decode (byte[] data) {
+    /**
+     * 解析入口方法
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 10:30
+     */
+    public static BsjProtocol decode (byte[] data) {
+        BsjProtocol protocol = new BsjProtocol();
         String hexStr = ByteArrayUtil.toHexString(data);
         System.out.println("source data -> " + hexStr);
 
         //协议类型
         byte type = data[0];
         System.out.println("协议类型 -> " + ByteUtil.byteToHex(type));
+        protocol.setProtocolType(ProtocolType.BSJ.getValue());
         //设备号
         byte[] deviceCodeByte = ByteUtil.subByteArr(data, 1, 8);
-        System.out.println("设备号 -> " + ByteArrayUtil.toHexString(deviceCodeByte));
+        String deviceCodeStr = ByteArrayUtil.toHexString(deviceCodeByte);
+        System.out.println("设备号 -> " + deviceCodeStr);
+        protocol.setDeviceCode(deviceCodeStr);
         //包长度
         byte[] bodyLen = ByteUtil.subByteArr(data, 9, 1);
         System.out.println("包长度 -> " + ByteArrayUtil.toHexString(bodyLen));
@@ -36,20 +50,29 @@ public class BsjMessageDecoder {
         System.out.println("协议号 -> " + msgIdStr);
         if (StringUtils.equals(msgIdStr, Command.BSJ_MSG_LOGIN)) {
             //登录
-            decodeLogin(data);
+            decodeLogin(protocol, data);
         } else if (StringUtils.equals(msgIdStr, Command.BSJ_MSG_LOCATION)) {
             //定位
-            decodeLocation(data);
+            decodeLocation(protocol, data);
         } else if (StringUtils.equals(msgIdStr, Command.BSJ_MSG_ALARM)) {
             //报警
-            decodeAlarm(data);
+            decodeAlarm(protocol, data);
         } else if (StringUtils.equals(msgIdStr, Command.BSJ_MSG_HEARTBEAT)) {
             //心跳
-            decodeHeartBeat(data);
+            decodeHeartBeat(protocol, data);
         }
+
+        return protocol;
     }
 
-    private static void decodeLogin(byte[] data) {
+    /**
+     * 解析登录信息
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 10:31
+     */
+    private static void decodeLogin(BsjProtocol protocol, byte[] data) {
         System.out.println("===收到登录消息===");
         //登录消息
         //设备号
@@ -69,41 +92,54 @@ public class BsjMessageDecoder {
         System.out.println("错误校验 -> " + ByteArrayUtil.toHexString(checkCode));
     }
 
-    private static void decodeLocation(byte[] data) {
+    /**
+     * 解析位置信息
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 10:31
+     */
+    private static void decodeLocation(BsjProtocol protocol, byte[] data) {
         System.out.println("===收到定位消息===");
         //日期时间
         byte[] dateBytes = ByteUtil.subByteArr(data, 11, 6);
         Date date = decodeDateTime(dateBytes);
-        String dateStr = DateFormatUtils.format(date, "20yy年MM月dd日HH时mm分ss秒");
+        String dateStr = DateFormatUtils.format(date, "yyMMddHHmmss");
         System.out.println("日期时间 -> " + dateStr);
+        protocol.setDateTime(date);
         //GPS信息卫星
         byte[] satNumBytes = ByteUtil.subByteArr(data, 17, 1);
         int satNum = decodeSatelliteNum(satNumBytes);
         System.out.println("GPS定位卫星数 -> " + satNum);
+        protocol.setSatelliteNum(satNum);
         //纬度
         byte[] lat = ByteUtil.subByteArr(data, 18, 4);
         double latDouble = MsgDecoder.decodeLatOrLon(lat) * 1000000;
         System.out.println("纬度 -> " + latDouble);
+        protocol.setLat(latDouble);
         //经度
         byte[] lon = ByteUtil.subByteArr(data, 22, 4);
         double lonDouble = MsgDecoder.decodeLatOrLon(lon) * 1000000;
         System.out.println("经度 -> " + lonDouble);
+        protocol.setLon(lonDouble);
         //速度
         byte[] speed = ByteUtil.subByteArr(data, 26, 1);
         double speedDouble = ByteUtil.byteToInteger(speed) * 10;
         System.out.println("速度 -> " + speedDouble);
+        protocol.setSpeed(speedDouble);
         //航向、状态
         byte[] directionByte = ByteUtil.subByteArr(data, 27, 2);
         int directionInt = decodeDirection(directionByte);
         System.out.println("航向、状态(方向) -> " + directionInt);
+        protocol.setDirection(directionInt);
         //GPS实时补传
         int gpsFill = ByteUtil.cutBytesToInt(data, 39, 1);
         System.out.println("GPS实时补传 -> " + gpsFill);
-
+        protocol.setGpsFill(gpsFill);
         int count = data.length - 40 - 4;
         if (count > 0) {
             //附加扩展
-            decodeExtenData(data, 40);
+            decodeExtenData(protocol, data, 40);
         }
 
         //序列号
@@ -114,43 +150,58 @@ public class BsjMessageDecoder {
         System.out.println("错误校验 -> " + ByteArrayUtil.toHexString(checkCode));
     }
 
-    private static void decodeAlarm(byte[] data) {
+    /**
+     * 解析报警信息
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 10:31
+     */
+    private static void decodeAlarm(BsjProtocol protocol, byte[] data) {
         System.out.println("===收到报警消息");
         //日期时间
         byte[] dateBytes = ByteUtil.subByteArr(data, 11, 6);
         Date date = decodeDateTime(dateBytes);
-        String dateStr = DateFormatUtils.format(date, "20yy年MM月dd日HH时mm分ss秒");
+        String dateStr = DateFormatUtils.format(date, "yyMMddHHmmss");
         System.out.println("日期时间 -> " + dateStr);
+        protocol.setDateTime(date);
         //GPS信息长度+卫星数
         byte[] satNumBytes = ByteUtil.subByteArr(data, 17, 1);
         int satNum = decodeSatelliteNum(satNumBytes);
         System.out.println("GPS定位卫星数 -> " + satNum);
+        protocol.setSatelliteNum(satNum);
         //纬度
         byte[] lat = ByteUtil.subByteArr(data, 18, 4);
         double latDouble = MsgDecoder.decodeLatOrLon(lat) * 1000000;
         System.out.println("纬度 -> " + latDouble);
+        protocol.setLat(latDouble);
         //经度
         byte[] lon = ByteUtil.subByteArr(data, 22, 4);
         double lonDouble = MsgDecoder.decodeLatOrLon(lon) * 1000000;
         System.out.println("经度 -> " + lonDouble);
+        protocol.setLon(lonDouble);
         //速度
         byte[] speed = ByteUtil.subByteArr(data, 26, 1);
         double speedDouble = ByteUtil.byteToInteger(speed) * 10;
         System.out.println("速度 -> " + speedDouble);
+        protocol.setSpeed(speedDouble);
         //航向、状态 -> 方向角
         byte[] directionByte = ByteUtil.subByteArr(data, 27, 2);
         int directionInt = decodeDirection(directionByte);
         System.out.println("航向、状态(方向) -> " + directionInt);
+        protocol.setDirection(directionInt);
         //电压等级
-        int voltageGrade = ByteUtil.cutBytesToInt(data, 39, 1);
-        System.out.println("电压等级 -> " + voltageGrade);
-        //GPS信号强度
-        int wifi = ByteUtil.cutBytesToInt(data, 40, 1);
-        System.out.println("GPS信号强度等级 -> " + wifi);
+        int voltageLevel = ByteUtil.cutBytesToInt(data, 39, 1);
+        System.out.println("电压等级 -> " + voltageLevel);
+        protocol.setVoltageLevel(voltageLevel);
+        //GPS信号强度等级
+        int signLevel = ByteUtil.cutBytesToInt(data, 40, 1);
+        System.out.println("GPS信号强度等级 -> " + signLevel);
+        protocol.setSignLevel(signLevel);
 
         int count = data.length - 43 - 4;
         if (count > 0) {
-            decodeExtenData(data, 43);
+            decodeExtenData(protocol, data, 43);
         }
 
         //序列号
@@ -162,18 +213,27 @@ public class BsjMessageDecoder {
 
     }
 
-    private static void decodeHeartBeat(byte[] data) {
+    /**
+     * 解析心跳信息
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 10:31
+     */
+    private static void decodeHeartBeat(BsjProtocol protocol, byte[] data) {
         System.out.println("===收到心跳消息===");
         //电压等级
-        int voltageGrade = ByteUtil.cutBytesToInt(data, 12, 1);
-        System.out.println("电压等级 -> " + voltageGrade);
+        int voltageLevel = ByteUtil.cutBytesToInt(data, 12, 1);
+        System.out.println("电压等级 -> " + voltageLevel);
+        protocol.setVoltageLevel(voltageLevel);
         //GSM信号强度
-        int wifi = ByteUtil.cutBytesToInt(data, 13, 1);
-        System.out.println("GSM信号强度等级 -> " + wifi);
+        int signLevel = ByteUtil.cutBytesToInt(data, 13, 1);
+        System.out.println("GSM信号强度等级 -> " + signLevel);
+        protocol.setSignLevel(signLevel);
         //附加扩展
         int count = data.length - 16 - 4;
         if (count > 0) {
-            decodeExtenData(data, 16);
+            decodeExtenData(protocol, data, 16);
         }
         //序列号
         byte[] seq = ByteUtil.subByteArr(data, 16 + count, 2);
@@ -183,7 +243,14 @@ public class BsjMessageDecoder {
         System.out.println("错误校验 -> " + ByteArrayUtil.toHexString(checkCode));
     }
 
-    private static void decodeExtenData(byte[] data, int from) {
+    /**
+     * 解析扩展数据
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 13:55
+     */
+    private static void decodeExtenData(BsjProtocol protocol, byte[] data, int from) {
         //附加扩展
         for (int i = from;i < data.length;i++) {
             //扩展长度
@@ -195,6 +262,38 @@ public class BsjMessageDecoder {
             //扩展数据
             byte[] extenData = ByteUtil.subByteArr(data, i + 4, extenLen - extenMsgId.length);
             System.out.println("扩展数据 -> " +ByteArrayUtil.toHexString(extenData));
+            int extenMsgIdInt = ByteUtil.byteToInteger(extenMsgId);
+            if (extenMsgIdInt == Command.BSJ_EXTENTION_ICCID) {
+                //ICCID
+                String iccid = ByteArrayUtil.toHexString(extenData);
+                System.out.println("ICCID -> " + iccid);
+                protocol.setIccid(iccid);
+            } else if (extenMsgIdInt == Command.BSJ_EXTENTION_STATUS_INFO) {
+                //状态信息
+                int statusInfo = ByteUtil.byteToInteger(extenData);
+                System.out.println("状态信息 -> " + statusInfo);
+                protocol.setVehicleStatus(statusInfo);
+            } else if (extenMsgIdInt == Command.BSJ_EXTENTION_ALARM_INFO) {
+                //报警信息
+                int alarmInfo = ByteUtil.byteToInteger(extenData);
+                System.out.println("报警信息 -> " + alarmInfo);
+                protocol.setAlarmStatus(alarmInfo);
+            } else if (extenMsgIdInt == Command.BSJ_EXTENTION_MILE_INFO) {
+                //里程信息
+                int mile = ByteUtil.cutBytesToInt(extenData, 0, 4);
+                int miles = ByteUtil.cutBytesToInt(extenData, 4, 4);
+                System.out.println("当日里程 -> " + mile);
+                System.out.println("总里程 -> " + miles);
+                protocol.setMile(mile);
+                protocol.setMiles(miles);
+            } else if (extenMsgIdInt == Command.BSJ_EXTENTION_VOLTAGE_INFO) {
+                //主电源电压
+                int voltage = ByteUtil.byteToInteger(extenData);
+                System.out.println("主电源电压 -> " + voltage);
+                protocol.setVoltage(voltage);
+            }
+
+            i = i + extenLen + 2;
         }
     }
 
@@ -229,6 +328,13 @@ public class BsjMessageDecoder {
         return satelliteNum;
     }
 
+    /**
+     * 解析日期时间
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/25 10:32
+     */
     public static Date decodeDateTime(byte[] hexBytes) {
         if (hexBytes.length < 6) {
             return null;
@@ -248,7 +354,7 @@ public class BsjMessageDecoder {
         int second = ByteUtil.oneByteToInteger(secondByte);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month-1, day, hour, minute, second);
+        calendar.set(year + 2000, month-1, day, hour, minute, second);
         Date date = calendar.getTime();
         return date;
     }

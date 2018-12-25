@@ -262,7 +262,7 @@ public class ByteUtil {
     }
 
     /**
-     * 十六进制转二进制
+     * description
      * @author liuwei
      * @return
      * @exception
@@ -271,6 +271,6 @@ public class ByteUtil {
     public static String hexStrToBinary16(String hexstr){
         String binAddr = Integer.toBinaryString(Integer.parseInt(hexstr, 16));
         String str = StringUtils.leftPad(binAddr, 16, '0');
-        return str;
+        return StringUtils.reverse(str);
     }
 }
