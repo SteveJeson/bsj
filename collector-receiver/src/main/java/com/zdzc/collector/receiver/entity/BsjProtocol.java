@@ -43,6 +43,11 @@ public class BsjProtocol extends Protocol {
      */
     private double miles;
 
+    /**
+     * 数据类型
+     */
+    private int msgType;
+
     public int getGpsFill() {
         return gpsFill;
     }
@@ -97,5 +102,27 @@ public class BsjProtocol extends Protocol {
 
     public void setMiles(double miles) {
         this.miles = miles;
+    }
+
+    @Override
+    public String toString() {
+        return "BsjProtocol{" +
+                "deviceCode=" + super.getDeviceCode() +
+                ",gpsFill=" + gpsFill +
+                ", voltageLevel=" + voltageLevel +
+                ", signLevel=" + signLevel +
+                ", vehicleStatus=" + vehicleStatus +
+                ", alarmStatus=" + alarmStatus +
+                ", mile=" + mile +
+                ", miles=" + miles +
+                '}';
+    }
+
+    public int getMsgType() {
+        return msgType;
+    }
+
+    public void setMsgType(int msgType) {
+        this.msgType = msgType;
     }
 }
