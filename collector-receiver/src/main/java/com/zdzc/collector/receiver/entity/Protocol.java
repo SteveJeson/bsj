@@ -139,4 +139,20 @@ public class Protocol {
     public void setVoltage(int voltage) {
         this.voltage = voltage;
     }
+
+    @Override
+    public String toString() {
+        return "Protocol{" +
+                "protocolType='" + protocolType + '\'' +
+                ", deviceCode='" + deviceCode + '\'' +
+                ", lat=" + lat +
+                ", lon=" + lon +
+                ", dateTime=" + dateTime +
+                ", direction=" + direction +
+                ", satelliteNum=" + satelliteNum +
+                ", speed=" + speed +
+                ", iccid='" + iccid + '\'' +
+                ", voltage=" + voltage +
+                '}';
+    }
 }
