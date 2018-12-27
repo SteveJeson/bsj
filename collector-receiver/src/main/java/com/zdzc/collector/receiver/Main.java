@@ -26,9 +26,13 @@ public class Main {
         String pwd = Config.get("mq.server.password");
         int interval = Config.getInt("mq.server.net.interval");
         String gpsQueueName = Config.get("gps.queue.name");
+        int gpsPrefetch = Config.getInt("gps.queue.prefetch");
         String heartQueueName = Config.get("heartbeat.queue.name");
+        int heartPrefetch = Config.getInt("login.queue.prefetch");
         String alarmQueueName = Config.get("alarm.queue.name");
+        int alarmPrefetch = Config.getInt("login.queue.prefetch");
         String loginQueueName = Config.get("login.queue.name");
+        int loginPrefetch = Config.getInt("login.queue.prefetch");
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(host);
         factory.setPort(port);
@@ -40,8 +44,8 @@ public class Main {
 
         Channel channel = connection.createChannel();
         channel.queueDeclare(loginQueueName, true, false, false, null);
-        channel.basicQos(1);
-        Worker worker = new Worker(channel, loginQueueName, "");
+        channel.basicQos(loginPrefetch);
+        Worker worker = new Worker(channel, loginQueueName, "SELECT trail_seq_no as seqNo, alarm_seq_no as alarmNo from gps_main.t_gps_main where device_code = ?");
         try {
             worker.run();
         } catch (Exception e) {
