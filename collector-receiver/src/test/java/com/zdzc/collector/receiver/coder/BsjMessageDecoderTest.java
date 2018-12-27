@@ -5,6 +5,7 @@ import com.sun.org.apache.xerces.internal.impl.io.ASCIIReader;
 import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.common.utils.DateUtil;
 import com.zdzc.collector.receiver.entity.BsjProtocol;
+import com.zdzc.collector.receiver.entity.Protocol;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.*;
 
@@ -71,6 +73,35 @@ public class BsjMessageDecoderTest {
         System.out.println("a -> " + a);
         System.out.println("b -> " + b);
         System.out.println(a==b);
+    }
+
+    @Test
+    public void test() {
+        ConcurrentHashMap<String, Protocol> map = new ConcurrentHashMap<>();
+        Protocol protocol = new Protocol();
+        protocol.setDeviceCode("1111");
+        map.put("gps_1.t_gps_a1_1", protocol);
+        Protocol protocol1 = new Protocol();
+        protocol1.setDeviceCode("22222");
+        map.put("gps_2.t_gps_a2_2", protocol1);
+
+        Protocol p = map.get("gps_1.t_gps_a1_1");
+        System.out.println(p.getDeviceCode());
+        Protocol p2 = map.get("gps_2.t_gps_a2_2");
+        System.out.println(p2.getDeviceCode());
+
+        ConcurrentHashMap<String, Integer> m = new ConcurrentHashMap<>();
+        Integer a = m.get("a");
+        System.out.println(a);
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0;i < 10;i++) {
+            builder.append("?");
+            if (i < 10 -1) {
+                builder.append(",");
+            }
+        }
+        System.out.println(builder.toString());
     }
 
 }

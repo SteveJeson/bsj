@@ -45,7 +45,7 @@ public class Main {
         Channel channel = connection.createChannel();
         channel.queueDeclare(loginQueueName, true, false, false, null);
         channel.basicQos(loginPrefetch);
-        Worker worker = new Worker(channel, loginQueueName, "SELECT trail_seq_no as seqNo, alarm_seq_no as alarmNo from gps_main.t_gps_main where device_code = ?");
+        Worker worker = new Worker(channel, loginQueueName);
         try {
             worker.run();
         } catch (Exception e) {
