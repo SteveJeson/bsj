@@ -9,12 +9,12 @@ import java.util.Map;
 
 public class TbUtil {
 
-    public static String GetDayOfMonth (Date date) {
+    public static String getDayOfMonth (Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int daysInMonth = calendar.get(Calendar.DAY_OF_MONTH);
         int month = calendar.get(Calendar.MONTH + 1);
-        return MonthToLetter (month) + daysInMonth;
+        return monthToLetter (month) + daysInMonth;
     }
 
     /**
@@ -24,7 +24,7 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:36
      */
-    private static String MonthToLetter (int month) {
+    private static String monthToLetter (int month) {
         String[] letters = { "a", "b", "c", "d" };
 
         return letters[(month - 1) % 4];
@@ -37,7 +37,7 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:39
      */
-    private static Map<String, Integer> GetDbNoAndTbNo (int seqNo, int rate, int mul, int sub) {
+    private static Map<String, Integer> getDbNoAndTbNo (int seqNo, int rate, int mul, int sub) {
         Map<String, Integer> map = new HashMap<>();
         int dbNo = 1, tbNo = 1;
         String seqStr = String.valueOf(seqNo);
@@ -57,9 +57,9 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:45
      */
-    private static Map<String, Integer> GetDbNoAndTbNo (int seqNo, String type) {
-        Map<String, Integer> map = GetRateParams (type);
-        return GetDbNoAndTbNo (seqNo, map.get("rate"), map.get("mul"), map.get("sub"));
+    private static Map<String, Integer> getDbNoAndTbNo (int seqNo, String type) {
+        Map<String, Integer> map = getRateParams (type);
+        return getDbNoAndTbNo (seqNo, map.get("rate"), map.get("mul"), map.get("sub"));
     }
 
     /**
@@ -69,8 +69,8 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:45
      */
-    public static String GetDbName (String dbPrex, int seqNo, String type) {
-        Map<String, Integer> map = GetDbNoAndTbNo (seqNo, type);
+    public static String getDbName (String dbPrex, int seqNo, String type) {
+        Map<String, Integer> map = getDbNoAndTbNo (seqNo, type);
         return dbPrex + "_" + map.get("dbNo");
     }
 
@@ -81,15 +81,15 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:46
      */
-    public static String GetTableName (Date time, String tbPrex, int seqNo, String type) {
-        String letterOfMonth = GetDayOfMonth (time);
+    public static String getTableName (Date time, String tbPrex, int seqNo, String type) {
+        String letterOfMonth = getDayOfMonth (time);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
         int month = calendar.get(Calendar.MONTH + 1);
         if (type.equals ("alarm")) {
-            letterOfMonth = MonthToLetter (month);
+            letterOfMonth = monthToLetter (month);
         }
-        Map<String, Integer> map = GetDbNoAndTbNo (seqNo, type);
+        Map<String, Integer> map = getDbNoAndTbNo (seqNo, type);
         return tbPrex + "_" + letterOfMonth + "_" + map.get("tbNo");
     }
 
@@ -100,7 +100,7 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:50
      */
-    private static Boolean IsSeqNoInScope (int seqNo, int range, int mul, int sub) {
+    private static Boolean isSeqNoInScope (int seqNo, int range, int mul, int sub) {
         if (seqNo == 0) {
             return true;
         }
@@ -121,8 +121,8 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:51
      */
-    private static int CreateLatestSeqNo (int seqNo, int range, int mul, int sub) {
-        Boolean flag = IsSeqNoInScope (seqNo, range, mul, sub);
+    private static int createLatestSeqNo (int seqNo, int range, int mul, int sub) {
+        Boolean flag = isSeqNoInScope (seqNo, range, mul, sub);
         if (flag) {
             return seqNo + 1;
         } else {
@@ -139,11 +139,11 @@ public class TbUtil {
      * @exception
      * @date 2018/12/26 15:53
      */
-    public static int CreateLatestSeqNo (int seqNo, String maxNum, String type) {
+    public static int createLatestSeqNo (int seqNo, String maxNum, String type) {
 
-        int range = Integer.parseInt (maxNum), mul = Integer.parseInt (String.valueOf(Math.pow (10, maxNum.length()))), sub = maxNum.length();
+        int range = Integer.parseInt (maxNum), mul = (int)Math.pow (10, maxNum.length()), sub = maxNum.length();
 
-        return CreateLatestSeqNo (seqNo, range, mul, sub);
+        return createLatestSeqNo (seqNo, range, mul, sub);
     }
 
    /**
@@ -153,7 +153,7 @@ public class TbUtil {
     * @exception
     * @date 2018/12/26 16:14
     */
-    private static Map<String, Integer> GetRateParams (String type) {
+    private static Map<String, Integer> getRateParams (String type) {
         Map<String, Integer> map = new HashMap<>();
         int rate = Config.getInt("gps.tableRecord.max");
         int maxNum = Config.getInt("gps.db.maxNum");

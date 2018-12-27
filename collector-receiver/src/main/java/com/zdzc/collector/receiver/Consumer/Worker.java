@@ -5,11 +5,9 @@ import com.rabbitmq.client.DeliverCallback;
 import com.zdzc.collector.receiver.coder.MsgDecoder;
 import com.zdzc.collector.receiver.db.DbConnectionPool;
 import com.zdzc.collector.receiver.entity.BsjProtocol;
-import com.zdzc.collector.receiver.entity.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,7 +24,7 @@ public class Worker implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
-    public Worker (Channel channel, String queueName, String sql) throws IOException {
+    public Worker (Channel channel, String queueName, String sql) {
        this.channel = channel;
        this.queueName = queueName;
        this.sql = sql;
@@ -35,7 +33,6 @@ public class Worker implements Runnable {
     public void doWork() throws Exception {
         Connection connection = DbConnectionPool.getConnect();
         PreparedStatement pst = connection.prepareStatement(sql);
-
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             try {
                 BsjProtocol protocol = MsgDecoder.decode(delivery.getBody());
@@ -44,7 +41,7 @@ public class Worker implements Runnable {
                 if (flag) {
                     System.out.println("ack -> " + count.intValue());
                     logger.debug("{} ack -> {}", queueName, count.intValue());
-                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), true);
+//                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), true);
                 }
 
             } catch (Exception e) {
