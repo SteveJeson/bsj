@@ -210,4 +210,9 @@ public class Command {
      */
     public static final String BSJ_MSG_RETURN_LENGTH = "05";
 
+    /**
+     * 博实结下发指令回复ID
+     */
+    public static final String BSJ_MSG_REPLY = "15";
+
 }

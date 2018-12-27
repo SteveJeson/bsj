@@ -36,7 +36,7 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
 
     private static final Logger logger = LoggerFactory.getLogger(BsjMessageHandler.class);
 
-    public static ConcurrentHashMap<String, String> channelMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, Object> channelMap = new ConcurrentHashMap<>();
 
     public static AtomicInteger count = new AtomicInteger(0);
 
@@ -68,7 +68,7 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String channelId = ctx.channel().id().toString();
-        String deviceCode = channelMap.get(channelId);
+        String deviceCode = (String)channelMap.get(channelId);
         logger.info("a connection disConnected --- channelId: " +  channelId + " deviceCode: " + deviceCode);
         channelMap.remove(channelId);
         channelMap.remove(deviceCode);
@@ -161,7 +161,7 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                     //对于新登录的设备，服务器会维护两个channelId, 设备id的对应关系表
                     String deviceCode = message.substring(8 ,24);
                     if(!channelMap.containsKey(deviceCode)){
-                        channelMap.put(deviceCode, channelId);
+                        channelMap.put(deviceCode, ctx.channel());
 //                        logger.info("saved key value -> {} : {}", deviceCode, channelId);
                     }
                     if(!channelMap.containsKey(channelId)){
@@ -172,22 +172,28 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                     String reply = generateReply(Command.BSJ_MSG_LOGIN, serialNum);
                     ctx.writeAndFlush(Unpooled.buffer().writeBytes(reply.getBytes()));
                 } else if (Command.BSJ_MSG_HEARTBEAT.equals(protocolNum)){
+                    //处理心跳信息
                     sendToMq(message, channelId, MqInitializer.bsjHeartbeatChannel, MqInitializer.bsjHeartbeatQueueName);
                     String reply = generateReply(Command.BSJ_MSG_HEARTBEAT, serialNum);
                     ctx.writeAndFlush(Unpooled.buffer().writeBytes(reply.getBytes()));
                 } else if (Command.BSJ_MSG_LOCATION.equals(protocolNum)){
+                    //处理位置信息
                     sendToMq(message, channelId, MqInitializer.bsjLocationChannel, MqInitializer.bsjLocationQueueName);
                 } else if (Command.BSJ_MSG_ALARM.equals(protocolNum)){
+                    //处理报警信息
                     sendToMq(message, channelId, MqInitializer.bsjAlarmChannel, MqInitializer.bsjAlarmQueueName);
                     String reply = generateReply(Command.BSJ_MSG_ALARM, serialNum);
                     ctx.writeAndFlush(Unpooled.buffer().writeBytes(reply.getBytes()));
+                } else if (Command.BSJ_MSG_REPLY.equals(protocolNum)){
+                    //处理下发指令回复的信息
+                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
                 }
             }
         }
     }
 
     private void sendToMq(String message, String channelId, Channel mqChannel, String queueName){
-        String deviceCode = channelMap.get(channelId);
+        String deviceCode = (String)channelMap.get(channelId);
         String mqMessage = ProtocolType.BSJ.getValue() + deviceCode + message.substring(4, message.length() - 4);
         Message msg = new Message();
         msg.setSendBody(StringUtil.decodeHexDump(mqMessage));

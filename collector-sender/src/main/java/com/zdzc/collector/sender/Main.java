@@ -1,7 +1,9 @@
 package com.zdzc.collector.sender;
 
+import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.rabbitmq.init.MqInitializer;
+import com.zdzc.collector.sender.consumer.MqConsumer;
 import com.zdzc.collector.sender.server.NettyMqServer;
 import com.zdzc.collector.tcpclient.core.ClientPoolManager;
 import org.slf4j.Logger;
@@ -24,6 +26,9 @@ public class Main {
             int serverPort = Config.getInt("netty.server.port");
             //初始化MQ配置
             MqInitializer.init();
+            if (ProtocolType.BSJ.getValue().equals(Config.get("protocol.type"))){
+                MqConsumer.initConsumer(MqInitializer.factory, MqInitializer.bsjCmdExchangeName, MqInitializer.bsjCmdQueueName);
+            }
             //初始化转发客户端连接池
             ClientPoolManager.init(remoteHost, remotePort, maxChannels);
             //启动Netty TCP服务
