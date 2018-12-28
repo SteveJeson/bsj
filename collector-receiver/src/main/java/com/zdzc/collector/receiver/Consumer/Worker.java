@@ -35,9 +35,9 @@ public class Worker implements Runnable {
 //                long remainCount = channel.messageCount(queueName);
                 Boolean flag = MessageConsumer.consume(protocol, count.incrementAndGet(), mapList);
                 if (flag) {
-                    System.out.println("ack -> " + count.intValue());
-                    logger.debug("{} ack -> {}", queueName, count.intValue());
-//                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), true);
+                    System.out.println(Thread.currentThread().getName() + " ack -> " + count.intValue());
+                    logger.debug("{} {} ack -> {}", Thread.currentThread().getName(),  queueName, count.intValue());
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), true);
                 }
 
             } catch (Exception e) {

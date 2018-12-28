@@ -13,7 +13,7 @@ public class TbUtil {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int daysInMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        int month = calendar.get(Calendar.MONTH + 1);
+        int month = calendar.get(Calendar.MONTH) + 1;
         return monthToLetter (month) + daysInMonth;
     }
 
@@ -85,7 +85,7 @@ public class TbUtil {
         String letterOfMonth = getDayOfMonth (time);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
-        int month = calendar.get(Calendar.MONTH + 1);
+        int month = calendar.get(Calendar.MONTH) + 1;
         if (type.equals ("alarm")) {
             letterOfMonth = monthToLetter (month);
         }
@@ -157,7 +157,7 @@ public class TbUtil {
         Map<String, Integer> map = new HashMap<>();
         int rate = Config.getInt("gps.tableRecord.max");
         int maxNum = Config.getInt("gps.db.maxNum");
-        int mul = Integer.parseInt (String.valueOf(Math.pow (10, String.valueOf(maxNum).length())));
+        int mul = (int)Math.pow (10, String.valueOf(maxNum).length());
         map.put("rate", rate);
         map.put("mul", mul);
         map.put("sub", String.valueOf(maxNum).length());
@@ -166,7 +166,7 @@ public class TbUtil {
                 int maxNumOfAlarm = Config.getInt("alarm.db.maxNum");
                 int rateOfAlarm = Config.getInt("alarm.tableRecord.max");
                 map.put("rate", rateOfAlarm);
-                map.put("mul", Integer.parseInt(String.valueOf(Math.pow(10, String.valueOf(maxNumOfAlarm).length()))));
+                map.put("mul", (int)Math.pow(10, String.valueOf(maxNumOfAlarm).length()));
                 map.put("sub", String.valueOf(maxNumOfAlarm).length());
                 break;
 

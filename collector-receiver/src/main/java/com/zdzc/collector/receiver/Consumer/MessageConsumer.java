@@ -1,25 +1,21 @@
 package com.zdzc.collector.receiver.Consumer;
 
-import com.sun.xml.internal.ws.api.pipe.ServerTubeAssemblerContext;
 import com.zdzc.collector.common.jenum.DataType;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
 import com.zdzc.collector.receiver.db.DbConnectionPool;
 import com.zdzc.collector.receiver.entity.BsjProtocol;
-import com.zdzc.collector.receiver.entity.Protocol;
 import com.zdzc.collector.receiver.util.TbUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.crypto.Data;
-import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageConsumer {
@@ -31,6 +27,9 @@ public class MessageConsumer {
 
     //保存设备号和报警序列号映射关系
     private static ConcurrentHashMap<String, Integer> alarmNoMap = new ConcurrentHashMap<>();
+
+    //设备的最新信息
+    private static ConcurrentHashMap<String, BsjProtocol> snapMap = new ConcurrentHashMap<>();
 
     private static String gpsDbPrefix = Config.get("gps.database.prefix");
 
@@ -45,6 +44,8 @@ public class MessageConsumer {
     private static int alarmBatchNum = Config.getInt("alarm.insert.batch");
 
     private static String gpsColumns = Config.get("gps.table.columns");
+
+    private static String alarmColumns = Config.get("alarm.table.columns");
 
     //保存主表设备号
     private static List<String> deviceList = new ArrayList<>();
@@ -70,49 +71,206 @@ public class MessageConsumer {
                 mapList.put(tbPath, list);
             }
 
+            int batchNum = 1;
             if (msgType == DataType.GPS.getValue()) {
-                toGpsBatchConsumer(mapList);
+                batchNum = gpsBatchNum;
+            } else if (msgType == DataType.ALARM.getValue()) {
+                batchNum = alarmBatchNum;
+            }
+            if (index % batchNum != 0) {
+                return false;
             }
 
+            String columns = "";
+            if (msgType == DataType.GPS.getValue()) {
+                columns = gpsColumns;
+            } else if (msgType == DataType.ALARM.getValue()) {
+                columns = alarmColumns;
+            }
+            return toGpsBatchConsumer(mapList, columns);
         }
 
         return false;
     }
 
-    public static Boolean toGpsBatchConsumer(ConcurrentHashMap<String, List<BsjProtocol>> mapList) {
-        if (mapList.size() == gpsBatchNum) {
-            try {
+    /**
+     * 位置消费者
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/28 13:28
+     */
+    public static Boolean toGpsBatchConsumer(ConcurrentHashMap<String, List<BsjProtocol>> mapList, String columns) {
+        boolean result = true;
+        for (Map.Entry<String, List<BsjProtocol>> entry : mapList.entrySet()) {
+            String tbPath = entry.getKey();
+            List<BsjProtocol> protocols = entry.getValue();
+            logger.debug("tbpath -> {}", tbPath);
+            int strLen = columns.split(",").length;
+            //占位符
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0;i < strLen;i++) {
+                builder.append("?");
+                if (i < strLen -1) {
+                    builder.append(",");
+                }
+            }
+            String sql = "INSERT INTO " + tbPath + "("+columns+")values("+builder+")";
+            Connection connection = null;
+            PreparedStatement pst;
+            try{
+                connection = DbConnectionPool.getConnect();
+                connection.setAutoCommit(false);
+                pst = connection.prepareStatement(sql);
+                for(BsjProtocol protocol : protocols){
+                    toSetParams(pst, protocol);
+                    pst.addBatch();
+                }
+                pst.executeBatch();
+                pst.close();
+            }catch (Exception e) {
+                e.printStackTrace();
+                logger.error(e.getLocalizedMessage());
+                result = false;
+            }finally {
 
-                for (Map.Entry<String, List<BsjProtocol>> entry : mapList.entrySet()) {
-                    String tbPath = entry.getKey();
-                    List<BsjProtocol> protocols = entry.getValue();
-                    int strLen = gpsColumns.split(",").length;
-                    //占位符
-                    StringBuilder builder = new StringBuilder();
-                    for (int i = 0;i < strLen;i++) {
-                        builder.append("?");
-                        if (i < strLen -1) {
-                            builder.append(",");
-                        }
-                    }
-                    String sql = "INSERT INTO " + tbPath + "("+gpsColumns+")values("+builder+")";
-                    Connection connection = DbConnectionPool.getConnect();
-                    PreparedStatement pst = connection.prepareStatement(sql);
-                    for(BsjProtocol protocol : protocols){
-                        pst.setString(1, protocol.getDeviceCode());
-                        pst.setInt(2, protocol.getAlarmStatus());
-                        pst.setInt(3, protocol.getVehicleStatus());
+                if (connection != null) {
+                    try {
+                        connection.commit();
+                        connection.setAutoCommit(true);
+                        connection.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.error(e.toString());
             }
-
         }
 
-        return false;
+        return result;
     }
+
+    /**
+     * 更新快照表
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/28 16:30
+     */
+    public static void updateSnapMap(BsjProtocol protocol) {
+        String sql = "";
+        String deviceCode = protocol.getDeviceCode();
+        if (!snapMap.containsKey(deviceCode)) {
+            snapMap.put(deviceCode, protocol);
+            return;
+        }
+        int msgType = protocol.getMsgType();
+        if (msgType == DataType.GPS.getValue()) {
+            sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
+                    " time = ?, mile = ?, satellite_num = ?, location_time = ?, voltage = ?, miles = ? where device_code = ?";
+            BsjProtocol p = snapMap.get(deviceCode);
+            int alarmStatus = protocol.getAlarmStatus();
+            if (alarmStatus != 0) {
+                p.setAlarmStatus(alarmStatus);
+            }
+            int vehicleStatus = protocol.getVehicleStatus();
+            if (vehicleStatus != 0) {
+                p.setVehicleStatus(vehicleStatus);
+            }
+            double lat = protocol.getLat();
+            if (lat != 0) {
+                p.setLat(lat);
+            }
+            double lon = protocol.getLon();
+            if (lon != 0) {
+                p.setLon(lon);
+            }
+            double speed = protocol.getSpeed();
+            if (speed != 0) {
+                p.setSpeed(speed);
+            }
+            double direction = protocol.getDirection();
+            if (direction != 0) {
+                p.setDirection(direction);
+            }
+            Date time = protocol.getDateTime();
+            if (time != null) {
+                p.setDateTime(time);
+            }
+            double mile = protocol.getMile();
+            if (mile != 0) {
+                p.setMile(mile);
+            }
+            int satNum = protocol.getSatelliteNum();
+            if (satNum != 0) {
+                p.setSatelliteNum(satNum);
+            }
+            p.setLocationTime(new Date());
+            int voltage = protocol.getVoltage();
+            if (voltage != 0) {
+                p.setVoltage(voltage);
+            }
+            double miles = protocol.getMiles();
+            if (miles != 0) {
+                p.setMiles(miles);
+            }
+        } else if (msgType == DataType.ALARM.getValue()) {
+            sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
+                    " time = ?, mile = ?, satellite_num = ?, alarm_time = ?, voltage = ?, miles = ? where device_code = ?";
+        } else if (msgType == DataType.HEARTBEAT.getValue()) {
+            sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?," +
+                    " mile = ?, heartbeat_time = ?, voltage = ?, miles = ? where device_code = ?";
+        }
+    }
+
+    public static void updateMain(BsjProtocol protocol) {
+        String iccid = protocol.getIccid();
+        if (StringUtils.isNotEmpty(iccid)) {
+            //todo 更新主表ICCID
+        }
+    }
+
+    /**
+     * 设置SQL语句参数
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/28 15:38
+     */
+    private static void toSetParams(PreparedStatement pst, BsjProtocol protocol) throws SQLException {
+        int msgType = protocol.getMsgType();
+        if (msgType == DataType.GPS.getValue()) {
+            pst.setString(1, protocol.getDeviceCode());
+            pst.setInt(2, protocol.getAlarmStatus());
+            pst.setInt(3, protocol.getVehicleStatus());
+            pst.setDouble(4, protocol.getLat());
+            pst.setDouble(5, protocol.getLon());
+            pst.setDouble(6, protocol.getSpeed());
+            pst.setDouble(7, protocol.getDirection());
+            String time = DateFormatUtils.format(protocol.getDateTime(), "yyMMddHHmmss");
+            pst.setString(8, time);
+            pst.setDouble(9, protocol.getMile());
+            pst.setInt(10, protocol.getSatelliteNum());
+            pst.setInt(11, protocol.getVoltage());
+            pst.setInt(12, protocol.getGpsFill());
+        } else if (msgType == DataType.ALARM.getValue()) {
+            pst.setString(1, protocol.getDeviceCode());
+            pst.setInt(2, protocol.getAlarmStatus());
+            pst.setInt(3, protocol.getVehicleStatus());
+            pst.setDouble(4, protocol.getLat());
+            pst.setDouble(5, protocol.getLon());
+            pst.setDouble(6, protocol.getSpeed());
+            pst.setDouble(7, protocol.getDirection());
+            String time = DateFormatUtils.format(protocol.getDateTime(), "yyMMddHHmmss");
+            pst.setString(8, time);
+            pst.setDouble(9, protocol.getMile());
+            pst.setInt(10, protocol.getSatelliteNum());
+            pst.setInt(11, 0);
+            pst.setInt(12,protocol.getVoltage());
+            pst.setInt(13, protocol.getSignLevel());
+            pst.setInt(14, protocol.getVoltageLevel());
+        }
+    }
+
 
     /**
      * 获取设备的表路径
@@ -204,6 +362,14 @@ public class MessageConsumer {
                 seqNoMap.put(deviceCode, latestSeqNo);
                 alarmNoMap.put(deviceCode, latestAlarmNo);
                 pstm.close();
+
+                //录入快照表
+                String insertSnapSql = "INSERT INTO GPS_MAIN.T_GPS_SNAPSHOT(device_code, protocol_type) values(?, ?)";
+                PreparedStatement pstt = pst.getConnection().prepareStatement(insertSnapSql);
+                pstt.setString(1, deviceCode);
+                pstt.setString(2, ProtocolType.BSJ.getValue());
+                pstt.execute();
+                pstt.close();
             }
             deviceList.add(deviceCode);
             return true;
@@ -211,7 +377,7 @@ public class MessageConsumer {
             e.printStackTrace();
             logger.error(e.toString());
         } finally {
-            closeConnection(pst);
+            closeConnection(pst, connection);
         }
         return false;
     }
@@ -247,7 +413,7 @@ public class MessageConsumer {
             e.printStackTrace();
             logger.error(e.toString());
         } finally {
-            closeConnection(pst);
+            closeConnection(pst, connection);
         }
 
     }
@@ -259,11 +425,11 @@ public class MessageConsumer {
      * @exception
      * @date 2018/12/27 14:24
      */
-    private static void closeConnection(PreparedStatement pst) {
+    private static void closeConnection(PreparedStatement pst, Connection connection) {
         if (pst != null) {
             try {
                 pst.close();
-                pst.getConnection().close();
+                connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
                 logger.error(e.toString());

@@ -1,5 +1,7 @@
 package com.zdzc.collector.receiver.entity;
 
+import java.util.Date;
+
 /**
  * 博实结协议实体类
  * @Author liuwei
@@ -47,6 +49,21 @@ public class BsjProtocol extends Protocol {
      * 数据类型
      */
     private int msgType;
+
+    /**
+     * 最新定位时间
+     */
+    private Date locationTime;
+
+    /**
+     * 最新报警时间
+     */
+    private Date alarmTime;
+
+    /**
+     *  最新心跳时间
+     */
+    private Date heartBeatTime;
 
     public int getGpsFill() {
         return gpsFill;
@@ -104,25 +121,35 @@ public class BsjProtocol extends Protocol {
         this.miles = miles;
     }
 
-    @Override
-    public String toString() {
-        return "BsjProtocol{" +
-                "deviceCode=" + super.getDeviceCode() +
-                ",gpsFill=" + gpsFill +
-                ", voltageLevel=" + voltageLevel +
-                ", signLevel=" + signLevel +
-                ", vehicleStatus=" + vehicleStatus +
-                ", alarmStatus=" + alarmStatus +
-                ", mile=" + mile +
-                ", miles=" + miles +
-                '}';
-    }
-
     public int getMsgType() {
         return msgType;
     }
 
     public void setMsgType(int msgType) {
         this.msgType = msgType;
+    }
+
+    public Date getLocationTime() {
+        return locationTime;
+    }
+
+    public void setLocationTime(Date locationTime) {
+        this.locationTime = locationTime;
+    }
+
+    public Date getAlarmTime() {
+        return alarmTime;
+    }
+
+    public void setAlarmTime(Date alarmTime) {
+        this.alarmTime = alarmTime;
+    }
+
+    public Date getHeartBeatTime() {
+        return heartBeatTime;
+    }
+
+    public void setHeartBeatTime(Date heartBeatTime) {
+        this.heartBeatTime = heartBeatTime;
     }
 }
