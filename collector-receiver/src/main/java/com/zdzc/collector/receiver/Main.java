@@ -28,9 +28,9 @@ public class Main {
         String gpsQueueName = Config.get("gps.queue.name");
         int gpsPrefetch = Config.getInt("gps.queue.prefetch");
         String heartQueueName = Config.get("heartbeat.queue.name");
-        int heartPrefetch = Config.getInt("login.queue.prefetch");
+        int heartPrefetch = Config.getInt("heartbeat.queue.prefetch");
         String alarmQueueName = Config.get("alarm.queue.name");
-        int alarmPrefetch = Config.getInt("login.queue.prefetch");
+        int alarmPrefetch = Config.getInt("alarm.queue.prefetch");
         String loginQueueName = Config.get("login.queue.name");
         int loginPrefetch = Config.getInt("login.queue.prefetch");
         ConnectionFactory factory = new ConnectionFactory();
@@ -42,12 +42,30 @@ public class Main {
         factory.setNetworkRecoveryInterval(interval);
         Connection connection = factory.newConnection();
 
-        Channel channel = connection.createChannel();
+      /*  Channel channel = connection.createChannel();
         channel.queueDeclare(loginQueueName, true, false, false, null);
         channel.basicQos(loginPrefetch);
         Worker worker = new Worker(channel, loginQueueName);
+*/
+        Channel channel1 = connection.createChannel();
+        channel1.queueDeclare(gpsQueueName, true, false, false, null);
+        channel1.basicQos(gpsPrefetch);
+        Worker worker1 = new Worker(channel1, gpsQueueName);
+        Thread thread1 = new Thread(worker1);
+        thread1.setName("GPS");
+
+        Channel channel2 = connection.createChannel();
+        channel2.queueDeclare(alarmQueueName, true, false, false, null);
+        channel2.basicQos(alarmPrefetch);
+        Worker worker2 = new Worker(channel2, alarmQueueName);
+        Thread thread2 = new Thread(worker2);
+        thread2.setName("ALARM");
         try {
-            worker.run();
+//            worker.run();
+//            worker1.run();
+//           worker2.run();
+           thread1.start();
+           thread2.start();
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.toString());

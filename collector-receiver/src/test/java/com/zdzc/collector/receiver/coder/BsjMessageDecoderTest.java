@@ -102,6 +102,10 @@ public class BsjMessageDecoderTest {
             }
         }
         System.out.println(builder.toString());
+        Protocol p3 = new Protocol();
+        p3.setDeviceCode("3333");
+        map.put("gps_2.t_gps_a2_2",p3);
+        System.out.println(map.get("gps_2.t_gps_a2_2"));
     }
 
 }
