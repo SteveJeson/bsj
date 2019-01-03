@@ -13,15 +13,10 @@ import com.zdzc.collector.sender.handler.WrtMessageHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author liuwei
@@ -31,12 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
-
-    private ChannelGroup channels = new DefaultChannelGroup(
-            GlobalEventExecutor.INSTANCE);
-
-
-    static AtomicInteger count = new AtomicInteger(0);
 
     public EchoServerHandler() {
 
@@ -91,19 +80,21 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // A closed channel will be removed from ChannelGroup automatically
-//        channels.add(ctx.channel());
-        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + count.incrementAndGet());
-
+        ChannelGroups.add(ctx.channel());
+        System.out.println("A new client connected -> " + ctx.channel().id().toString() + ", " + ChannelGroups.size());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String channelId = ctx.channel().id().toString();
-        System.out.println("A client disconnected -> " + channelId + ", " + count.decrementAndGet());
-        String value = WrtMessageHandler.channelMap.get(channelId).toString();
-        if(StringUtils.isNotEmpty(value)){
-            WrtMessageHandler.channelMap.remove(channelId, value);
-            WrtMessageHandler.channelMap.remove(value, ctx.channel());
+        System.out.println("A client disconnected -> " + channelId + ", " + ChannelGroups.size());
+        String protocolType = Config.get("protocol.type");
+        if (StringUtils.equals(protocolType, ProtocolType.WRT.getValue())) {
+            String value = WrtMessageHandler.channelMap.get(channelId).toString();
+            if(StringUtils.isNotEmpty(value)){
+                WrtMessageHandler.channelMap.remove(channelId, value);
+                WrtMessageHandler.channelMap.remove(value, ctx.channel());
+            }
         }
     }
 

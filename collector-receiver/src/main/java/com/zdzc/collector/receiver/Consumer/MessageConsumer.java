@@ -50,6 +50,13 @@ public class MessageConsumer {
     //保存主表设备号
     private static List<String> deviceList = new ArrayList<>();
 
+    /**
+     * 消费者
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2019/1/3 15:45
+     */
     public static Boolean consume(BsjProtocol protocol, final int index, ConcurrentHashMap<String, List<BsjProtocol>> mapList)  {
         int msgType = protocol.getMsgType();
         if (msgType == DataType.Registry.getValue()) {
@@ -58,6 +65,10 @@ public class MessageConsumer {
         }
 
         if (msgType == DataType.GPS.getValue() || msgType == DataType.ALARM.getValue()) {
+            //更新主表ICCID
+            updateMain(protocol);
+            //更新快照表
+            updateSnapMap(protocol);
             //位置、报警信息
             Map<String, String> map = getTbPath(protocol);
             String tbPath = map.get("tbPath");
@@ -87,20 +98,20 @@ public class MessageConsumer {
             } else if (msgType == DataType.ALARM.getValue()) {
                 columns = alarmColumns;
             }
-            return toGpsBatchConsumer(mapList, columns);
+            return toBatchConsumer(mapList, columns);
         }
 
         return false;
     }
 
     /**
-     * 位置消费者
+     * 批量消费位置报警数据
      * @author liuwei
      * @return
      * @exception
      * @date 2018/12/28 13:28
      */
-    public static Boolean toGpsBatchConsumer(ConcurrentHashMap<String, List<BsjProtocol>> mapList, String columns) {
+    public static Boolean toBatchConsumer(ConcurrentHashMap<String, List<BsjProtocol>> mapList, String columns) {
         boolean result = true;
         for (Map.Entry<String, List<BsjProtocol>> entry : mapList.entrySet()) {
             String tbPath = entry.getKey();
@@ -133,7 +144,6 @@ public class MessageConsumer {
                 logger.error(e.getLocalizedMessage());
                 result = false;
             }finally {
-
                 if (connection != null) {
                     try {
                         connection.commit();
@@ -157,75 +167,111 @@ public class MessageConsumer {
      * @date 2018/12/28 16:30
      */
     public static void updateSnapMap(BsjProtocol protocol) {
-        String sql = "";
+        String sql;
         String deviceCode = protocol.getDeviceCode();
         if (!snapMap.containsKey(deviceCode)) {
             snapMap.put(deviceCode, protocol);
             return;
         }
-        int msgType = protocol.getMsgType();
-        if (msgType == DataType.GPS.getValue()) {
-            sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
-                    " time = ?, mile = ?, satellite_num = ?, location_time = ?, voltage = ?, miles = ? where device_code = ?";
-            BsjProtocol p = snapMap.get(deviceCode);
-            int alarmStatus = protocol.getAlarmStatus();
-            if (alarmStatus != 0) {
-                p.setAlarmStatus(alarmStatus);
+        Connection connection = null;
+        PreparedStatement pst = null;
+        try {
+            connection = DbConnectionPool.getConnect();
+            int msgType = protocol.getMsgType();
+            if (msgType == DataType.GPS.getValue()) {
+                sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
+                        " time = ?, mile = ?, satellite_num = ?, location_time = ?, voltage = ?, miles = ? where device_code = ?";
+                pst = connection.prepareStatement(sql);
+                int alarmStatus = protocol.getAlarmStatus();
+                pst.setInt(1, alarmStatus);
+                int vehicleStatus = protocol.getVehicleStatus();
+                pst.setInt(2, vehicleStatus);
+                double lat = protocol.getLat();
+                pst.setDouble(3, lat);
+                double lon = protocol.getLon();
+                pst.setDouble(4, lon);
+                double speed = protocol.getSpeed();
+                pst.setDouble(5, speed);
+                double direction = protocol.getDirection();
+                pst.setDouble(6, direction);
+                Date time = protocol.getDateTime();
+                String timeStr = DateFormatUtils.format(time, "yyMMddHHmmss");
+                pst.setString(7, timeStr);
+                double mile = protocol.getMile();
+                pst.setDouble(8, mile);
+                int satNum = protocol.getSatelliteNum();
+                pst.setInt(9, satNum);
+                Date locationTime = protocol.getLocationTime();
+                pst.setDate(10, new java.sql.Date(locationTime.getTime()));
+                int voltage = protocol.getVoltage();
+                pst.setInt(11, voltage);
+                double miles = protocol.getMiles();
+                pst.setDouble(12, miles);
+                pst.setString(13, deviceCode);
+            } else if (msgType == DataType.ALARM.getValue()) {
+                sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
+                        " time = ?, mile = ?, satellite_num = ?, alarm_time = ?, voltage = ?, miles = ? where device_code = ?";
+                pst = connection.prepareStatement(sql);
+                pst.setInt(1, protocol.getAlarmStatus());
+                pst.setInt(2, protocol.getVehicleStatus());
+                pst.setDouble(3, protocol.getLat());
+                pst.setDouble(4, protocol.getLon());
+                pst.setDouble(5, protocol.getSpeed());
+                pst.setDouble(6, protocol.getDirection());
+                pst.setString(7, DateFormatUtils.format(protocol.getDateTime(), "yyMMddHHmmss"));
+                pst.setDouble(8, protocol.getMile());
+                pst.setInt(9, protocol.getSatelliteNum());
+                pst.setDate(10, new java.sql.Date(protocol.getAlarmTime().getTime()));
+                pst.setInt(11, protocol.getVoltage());
+                pst.setDouble(12, protocol.getMiles());
+                pst.setString(13, deviceCode);
+            } else if (msgType == DataType.HEARTBEAT.getValue()) {
+                sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?," +
+                        " mile = ?, heartbeat_time = ?, voltage = ?, miles = ? where device_code = ?";
+                pst = connection.prepareStatement(sql);
+                pst.setInt(1, protocol.getAlarmStatus());
+                pst.setInt(2, protocol.getVehicleStatus());
+                pst.setDouble(3, protocol.getMile());
+                pst.setString(4, DateFormatUtils.format(protocol.getHeartBeatTime(), "yyMMddHHmmss"));
+                pst.setInt(5, protocol.getVoltage());
+                pst.setDouble(6, protocol.getMiles());
+                pst.setString(7, protocol.getDeviceCode());
             }
-            int vehicleStatus = protocol.getVehicleStatus();
-            if (vehicleStatus != 0) {
-                p.setVehicleStatus(vehicleStatus);
-            }
-            double lat = protocol.getLat();
-            if (lat != 0) {
-                p.setLat(lat);
-            }
-            double lon = protocol.getLon();
-            if (lon != 0) {
-                p.setLon(lon);
-            }
-            double speed = protocol.getSpeed();
-            if (speed != 0) {
-                p.setSpeed(speed);
-            }
-            double direction = protocol.getDirection();
-            if (direction != 0) {
-                p.setDirection(direction);
-            }
-            Date time = protocol.getDateTime();
-            if (time != null) {
-                p.setDateTime(time);
-            }
-            double mile = protocol.getMile();
-            if (mile != 0) {
-                p.setMile(mile);
-            }
-            int satNum = protocol.getSatelliteNum();
-            if (satNum != 0) {
-                p.setSatelliteNum(satNum);
-            }
-            p.setLocationTime(new Date());
-            int voltage = protocol.getVoltage();
-            if (voltage != 0) {
-                p.setVoltage(voltage);
-            }
-            double miles = protocol.getMiles();
-            if (miles != 0) {
-                p.setMiles(miles);
-            }
-        } else if (msgType == DataType.ALARM.getValue()) {
-            sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
-                    " time = ?, mile = ?, satellite_num = ?, alarm_time = ?, voltage = ?, miles = ? where device_code = ?";
-        } else if (msgType == DataType.HEARTBEAT.getValue()) {
-            sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?," +
-                    " mile = ?, heartbeat_time = ?, voltage = ?, miles = ? where device_code = ?";
+            pst.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+        } finally {
+            closeConnection(pst, connection);
         }
     }
 
+    /**
+     * 更新主表ICCID
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2019/1/3 9:39
+     */
     public static void updateMain(BsjProtocol protocol) {
         String iccid = protocol.getIccid();
         if (StringUtils.isNotEmpty(iccid)) {
             //todo 更新主表ICCID
+            Connection connection = null;
+            PreparedStatement pst = null;
+            try {
+                connection = DbConnectionPool.getConnect();
+                String sql = "UPDATE GPS_MAIN.T_GPS_MAIN SET iccid = ? where device_code = ?";
+                pst = connection.prepareStatement(sql);
+                pst.setString(1, protocol.getIccid());
+                pst.setString(2, protocol.getDeviceCode());
+                pst.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.error(e.getMessage());
+            } finally {
+                closeConnection(pst, connection);
+            }
         }
     }
 
@@ -271,7 +317,6 @@ public class MessageConsumer {
         }
     }
 
-
     /**
      * 获取设备的表路径
      * @author liuwei
@@ -302,8 +347,6 @@ public class MessageConsumer {
         map.put("tbPath", tbPath);
         return map;
     }
-
-
 
     /**
      * 处理登录信息 -> 设备录入

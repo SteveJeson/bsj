@@ -42,11 +42,13 @@ public class Main {
         factory.setNetworkRecoveryInterval(interval);
         Connection connection = factory.newConnection();
 
-      /*  Channel channel = connection.createChannel();
+        Channel channel = connection.createChannel();
         channel.queueDeclare(loginQueueName, true, false, false, null);
         channel.basicQos(loginPrefetch);
         Worker worker = new Worker(channel, loginQueueName);
-*/
+        Thread thread = new Thread(worker);
+        thread.setName("LOGIN");
+
         Channel channel1 = connection.createChannel();
         channel1.queueDeclare(gpsQueueName, true, false, false, null);
         channel1.basicQos(gpsPrefetch);
@@ -64,6 +66,7 @@ public class Main {
 //            worker.run();
 //            worker1.run();
 //           worker2.run();
+            thread.start();
            thread1.start();
            thread2.start();
         } catch (Exception e) {
