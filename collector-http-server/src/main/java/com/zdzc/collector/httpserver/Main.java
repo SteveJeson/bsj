@@ -26,7 +26,7 @@ public class Main {
             //初始化MQ配置
             MqInitializer.init();
             //初始化转发客户端连接池
-            ClientPoolManager.init(remoteHost, remotePort, maxChannels);
+//            ClientPoolManager.init(remoteHost, remotePort, maxChannels);
 
             int port = Config.getInt("http.server.port");
             HttpServer.start(port);

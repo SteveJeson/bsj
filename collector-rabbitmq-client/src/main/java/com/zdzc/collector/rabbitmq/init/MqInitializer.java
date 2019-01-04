@@ -1,12 +1,10 @@
 package com.zdzc.collector.rabbitmq.init;
 
-import com.rabbitmq.client.*;
 import com.rabbitmq.client.Channel;
-import com.zdzc.collector.common.jconst.SysConst;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.jfinal.Config;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,6 +111,8 @@ public class MqInitializer {
 
     public static int wrtControllerQueueStart = Config.getInt("wrt.controller.queue.start", 0);
 
+    public static String wrtCmdQueueName = Config.get("wrt.command.queue.name");
+
     public static String wrtCmdReplyQueueName = Config.get("wrt.command.queue.reply.name");
 
     public static String bsjLoginQueueName = Config.get("bsj.login.queue.name");
@@ -158,6 +158,8 @@ public class MqInitializer {
     public static Channel bsjHeartbeatChannel;
 
     public static Channel bsjReplyChannel;
+
+    public static Channel wrtCmdChannel;
 
     public static Channel replyChannel;
 
@@ -239,7 +241,9 @@ public class MqInitializer {
             logger.info("create CONTROLLER connection -> {}", i+1);
             createQueues(factory.newConnection(), wrtControllerQueuePrefix, wrtControllerChannelCount, wrtControllerQueueCount, wrtControllerQueueStart, wrtControllerChannels);
         }
-        createQueues(factory.newConnection(), wrtCmdReplyQueueName, Config.get("protocol.type"));
+        createQueues(factory.newConnection(), wrtCmdReplyQueueName, replyChannel);
+        createQueues(factory.newConnection(), wrtCmdQueueName, wrtCmdChannel);
+
     }
 
     /**
@@ -264,7 +268,7 @@ public class MqInitializer {
         bsjHeartbeatChannel = heartbeatConnection.createChannel();
         bsjHeartbeatChannel.queueDeclare(bsjHeartbeatQueueName, true, false, false, null);
         //下发消息回复
-        createQueues(factory.newConnection(), bsjCmdReplyQueueName, Config.get("protocol.type"));
+        createQueues(factory.newConnection(), bsjCmdReplyQueueName, bsjReplyChannel);
     }
 
     /**
@@ -309,17 +313,21 @@ public class MqInitializer {
      * @param connection
      * @param queueName
      */
-    public static void createQueues(Connection connection, String queueName, String protocolType){
+//            if (ProtocolType.BSJ.getValue().equals(protocolType)){
+//                bsjReplyChannel = connection.createChannel();
+//                bsjReplyChannel.queueDeclare(queueName, true, false, false, null);
+//            }else if (ProtocolType.WRT.getValue().equals(protocolType)) {
+//                replyChannel = connection.createChannel();
+//                replyChannel.queueDeclare(queueName, true, false, false, null);
+//            }
+
+    public static void createQueues(Connection connection, String queueName, Channel channel){
         try {
-            if (ProtocolType.BSJ.getValue().equals(protocolType)){
-                bsjReplyChannel = connection.createChannel();
-                bsjReplyChannel.queueDeclare(queueName, true, false, false, null);
-            }else if (ProtocolType.WRT.getValue().equals(protocolType)) {
-                replyChannel = connection.createChannel();
-                replyChannel.queueDeclare(queueName, true, false, false, null);
-            }
+            channel = connection.createChannel();
+            channel.queueDeclare(queueName, true, false, false, null);
+
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error(e.toString());
         }
     }
 }

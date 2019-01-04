@@ -12,9 +12,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @Author liuwei
@@ -31,50 +29,8 @@ public class ToWrtMessageDecoder {
      * @return
      */
     public static Message decode(String data){
-        if (data != null && data.startsWith(ProtocolSign.WRT_BEGINMARK.getValue())
-                && data.endsWith(ProtocolSign.WRT_ENDMARK.getValue())
-                && !data.contains(ProtocolSign.WRT_ENDMARK.getValue()+ProtocolSign.WRT_BEGINMARK.getValue())) {
-            //直接处理
-            return decodeMessage(data);
-        } else {
-            //粘包数据
-            Header header = new Header();
-            header.setProtocolType(ProtocolType.WRT.getValue());
-            Message message = new Message();
-            message.setHeader(header);
-            message.setStick(true);
-            message.setAll(data);
-            return message;
-        }
+        return decodeMessage(data);
     }
-
-//    /**
-//     * 拆包 -> 沃瑞特C11
-//     * @param info
-//     * @return
-//     */
-//    public static List<String> dealPackageSplicing(String info){
-//        List<String> messages = new ArrayList<>();
-//        String beginMark = ProtocolSign.WRT_BEGINMARK.getValue();
-//        String endMark = ProtocolSign.WRT_ENDMARK.getValue();
-//        String[] msgArr = info.split(endMark + beginMark);
-//        if (msgArr.length != 1) {
-//            for (int i = 0; i < msgArr.length; i++) {
-//                String message;
-//                if (i == 0) {
-//                    message = msgArr[i] + endMark;
-//                } else if (i == msgArr.length - 1) {
-//                    message = beginMark + msgArr[i];
-//                } else {
-//                    message = beginMark + msgArr[i] + endMark;
-//                }
-//                messages.add(message);
-//            }
-//        }else {
-//            logger.warn("unknown message: " + info);
-//        }
-//        return messages;
-//    }
 
     /**
      * 解析消息 -> 沃瑞特C11

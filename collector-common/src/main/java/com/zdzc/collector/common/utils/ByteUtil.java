@@ -260,4 +260,17 @@ public class ByteUtil {
         }
         return hex;
     }
+
+    /**
+     * description
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2018/12/24 15:38
+     */
+    public static String hexStrToBinary16(String hexstr){
+        String binAddr = Integer.toBinaryString(Integer.parseInt(hexstr, 16));
+        String str = StringUtils.leftPad(binAddr, 16, '0');
+        return StringUtils.reverse(str);
+    }
 }

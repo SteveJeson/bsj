@@ -174,6 +174,11 @@ public class Command {
     public static final String MSG_IP_RESP = "AP64";
 
     /**
+     * 控制器下发指令回复
+     */
+    public static final String WRT_CMD_CONTROLLER_RESP = "AP91";
+
+    /**
      * HTTP请求参数单个数据标识
      */
     public static final String HTTP_DATA_SINGLE = "deviceDataChanged";
@@ -214,5 +219,29 @@ public class Command {
      * 博实结下发指令回复ID
      */
     public static final String BSJ_MSG_REPLY = "15";
+    /**
+     * 博实结扩展数据 -> ICCID
+     */
+    public static final int BSJ_EXTENTION_ICCID = 0x00B2;
+
+    /**
+     * 博实结扩展数据 -> 状态信息
+     */
+    public static final int BSJ_EXTENTION_STATUS_INFO = 0x00C7;
+
+    /**
+     * 博实结扩展数据 -> 报警信息
+     */
+    public static final int BSJ_EXTENTION_ALARM_INFO = 0x00C8;
+
+    /**
+     * 博实结扩展数据 -> 里程信息
+     */
+    public static final int BSJ_EXTENTION_MILE_INFO = 0x00C9;
+
+    /**
+     * 博实结扩展数据 -> 主电源电压
+     */
+    public static final int BSJ_EXTENTION_VOLTAGE_INFO = 0x00CA;
 
 }

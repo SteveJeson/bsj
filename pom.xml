@@ -16,12 +16,15 @@
         <module>collector-sender</module>
         <module>collector-http-server</module>
         <module>simulator</module>
+        <module>collector-receiver</module>
+        <module>collector-test</module>
+        <module>collector-simulator</module>
     </modules>
 
     <properties>
         <junit.version>4.12</junit.version>
         <commons.lang.version>RELEASE</commons.lang.version>
-        <amqp.client.version>4.8.0</amqp.client.version>
+        <amqp.client.version>5.1.2</amqp.client.version>
         <logback.all.version>1.2.3</logback.all.version>
         <slf4j.version>1.7.25</slf4j.version>
         <netty.version>4.1.20.Final</netty.version>
