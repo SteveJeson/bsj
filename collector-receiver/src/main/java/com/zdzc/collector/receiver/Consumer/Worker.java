@@ -33,11 +33,14 @@ public class Worker implements Runnable {
             try {
                 BsjProtocol protocol = MsgDecoder.decode(delivery.getBody());
 //                long remainCount = channel.messageCount(queueName);
+
                 Boolean flag = MessageConsumer.consume(protocol, count.incrementAndGet(), mapList);
                 if (flag) {
                     System.out.println(Thread.currentThread().getName() + " ack -> " + count.intValue());
                     logger.debug("{} {} ack -> {}", Thread.currentThread().getName(),  queueName, count.intValue());
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), true);
+                } else {
+                    channel.basicNack(delivery.getEnvelope().getDeliveryTag(), true, true);
                 }
 
             } catch (Exception e) {

@@ -42,6 +42,7 @@ public class Main {
         factory.setNetworkRecoveryInterval(interval);
         Connection connection = factory.newConnection();
 
+        //登录
         Channel channel = connection.createChannel();
         channel.queueDeclare(loginQueueName, true, false, false, null);
         channel.basicQos(loginPrefetch);
@@ -49,6 +50,7 @@ public class Main {
         Thread thread = new Thread(worker);
         thread.setName("LOGIN");
 
+        //定位
         Channel channel1 = connection.createChannel();
         channel1.queueDeclare(gpsQueueName, true, false, false, null);
         channel1.basicQos(gpsPrefetch);
@@ -56,19 +58,28 @@ public class Main {
         Thread thread1 = new Thread(worker1);
         thread1.setName("GPS");
 
+        //报警
         Channel channel2 = connection.createChannel();
         channel2.queueDeclare(alarmQueueName, true, false, false, null);
         channel2.basicQos(alarmPrefetch);
         Worker worker2 = new Worker(channel2, alarmQueueName);
         Thread thread2 = new Thread(worker2);
         thread2.setName("ALARM");
+
+        //心跳
+        Channel channel3 = connection.createChannel();
+        channel3.queueDeclare(heartQueueName, true, false, false, null);
+        channel3.basicQos(heartPrefetch);
+        Worker worker3 = new Worker(channel3, heartQueueName);
+        Thread thread3 = new Thread(worker3);
+        thread3.setName("HEARTBEEAT");
+
         try {
-//            worker.run();
-//            worker1.run();
-//           worker2.run();
             thread.start();
-           thread1.start();
-           thread2.start();
+            Thread.sleep(10000);
+            thread1.start();
+            thread2.start();
+            thread3.start();
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.toString());

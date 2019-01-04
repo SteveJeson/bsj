@@ -64,33 +64,36 @@ public class MessageConsumer {
             return consumeLoginInfo(protocol);
         }
 
+        //更新主表ICCID
+        updateMain(protocol);
+        //更新快照表
+        updateSnapMap(protocol);
+        //插入轨迹报警表
         if (msgType == DataType.GPS.getValue() || msgType == DataType.ALARM.getValue()) {
-            //更新主表ICCID
-            updateMain(protocol);
-            //更新快照表
-            updateSnapMap(protocol);
+
             //位置、报警信息
             Map<String, String> map = getTbPath(protocol);
             String tbPath = map.get("tbPath");
             if (tbPath == null) {
                 return false;
             }
-            if (mapList.containsKey(tbPath)) {
-                mapList.get(tbPath).add(protocol);
-            } else {
-                List<BsjProtocol> list = new ArrayList<>();
-                mapList.put(tbPath, list);
-            }
+//            if (mapList.containsKey(tbPath)) {
+//                mapList.get(tbPath).add(protocol);
+//            } else {
+//                List<BsjProtocol> list = new ArrayList<>();
+//                mapList.put(tbPath, list);
+//            }
+//
+//            int batchNum = 1;
+//            if (msgType == DataType.GPS.getValue()) {
+//                batchNum = gpsBatchNum;
+//            } else if (msgType == DataType.ALARM.getValue()) {
+//                batchNum = alarmBatchNum;
+//            }
+//            if (index % batchNum != 0) {
+//                return true;
+//            }
 
-            int batchNum = 1;
-            if (msgType == DataType.GPS.getValue()) {
-                batchNum = gpsBatchNum;
-            } else if (msgType == DataType.ALARM.getValue()) {
-                batchNum = alarmBatchNum;
-            }
-            if (index % batchNum != 0) {
-                return false;
-            }
 
             String columns = "";
             if (msgType == DataType.GPS.getValue()) {
@@ -98,10 +101,51 @@ public class MessageConsumer {
             } else if (msgType == DataType.ALARM.getValue()) {
                 columns = alarmColumns;
             }
-            return toBatchConsumer(mapList, columns);
+//            if (batchNum <= 1) {
+//                return toSingleConsumer(protocol, columns, tbPath);
+//            } else {
+//                return toBatchConsumer(mapList, columns);
+//            }
+            return toSingleConsumer(protocol, columns, tbPath);
         }
 
-        return false;
+        return true;
+    }
+
+    public static Boolean toSingleConsumer(BsjProtocol protocol, String columns, String tbPath) {
+        Boolean result = true;
+        int strLen = columns.split(",").length;
+        //占位符
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0;i < strLen;i++) {
+            builder.append("?");
+            if (i < strLen -1) {
+                builder.append(",");
+            }
+        }
+        String sql = "INSERT INTO " + tbPath + "("+columns+")values("+builder+")";
+        Connection connection = null;
+        PreparedStatement pst;
+        try{
+            connection = DbConnectionPool.getConnect();
+            pst = connection.prepareStatement(sql);
+            toSetParams(pst, protocol);
+            pst.execute();
+            pst.close();
+        }catch (Exception e) {
+            logger.error(e.getMessage());
+            result = false;
+        }finally {
+            if(connection != null){
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    logger.error(e.getMessage());
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -131,14 +175,16 @@ public class MessageConsumer {
             PreparedStatement pst;
             try{
                 connection = DbConnectionPool.getConnect();
-                connection.setAutoCommit(false);
+//                connection.setAutoCommit(false);
                 pst = connection.prepareStatement(sql);
                 for(BsjProtocol protocol : protocols){
                     toSetParams(pst, protocol);
                     pst.addBatch();
                 }
                 pst.executeBatch();
+                System.out.println("=====executed====");
                 pst.close();
+                mapList.clear();
             }catch (Exception e) {
                 e.printStackTrace();
                 logger.error(e.getLocalizedMessage());
@@ -146,8 +192,8 @@ public class MessageConsumer {
             }finally {
                 if (connection != null) {
                     try {
-                        connection.commit();
-                        connection.setAutoCommit(true);
+//                        connection.commit();
+//                        connection.setAutoCommit(true);
                         connection.close();
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -202,7 +248,7 @@ public class MessageConsumer {
                 int satNum = protocol.getSatelliteNum();
                 pst.setInt(9, satNum);
                 Date locationTime = protocol.getLocationTime();
-                pst.setDate(10, new java.sql.Date(locationTime.getTime()));
+                pst.setString(10, DateFormatUtils.format(locationTime, "yyyy-MM-dd HH:mm:ss"));
                 int voltage = protocol.getVoltage();
                 pst.setInt(11, voltage);
                 double miles = protocol.getMiles();
@@ -221,7 +267,7 @@ public class MessageConsumer {
                 pst.setString(7, DateFormatUtils.format(protocol.getDateTime(), "yyMMddHHmmss"));
                 pst.setDouble(8, protocol.getMile());
                 pst.setInt(9, protocol.getSatelliteNum());
-                pst.setDate(10, new java.sql.Date(protocol.getAlarmTime().getTime()));
+                pst.setString(10, DateFormatUtils.format(protocol.getAlarmTime(), "yyyy-MM-dd HH:mm:ss"));
                 pst.setInt(11, protocol.getVoltage());
                 pst.setDouble(12, protocol.getMiles());
                 pst.setString(13, deviceCode);
