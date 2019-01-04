@@ -228,10 +228,10 @@ public class MessageConsumer {
                 sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
                         " time = ?, mile = ?, satellite_num = ?, location_time = ?, voltage = ?, miles = ? where device_code = ?";
                 pst = connection.prepareStatement(sql);
-                int alarmStatus = protocol.getAlarmStatus();
-                pst.setInt(1, alarmStatus);
-                int vehicleStatus = protocol.getVehicleStatus();
-                pst.setInt(2, vehicleStatus);
+                long alarmStatus = protocol.getAlarmStatus();
+                pst.setLong(1, alarmStatus);
+                long vehicleStatus = protocol.getVehicleStatus();
+                pst.setLong(2, vehicleStatus);
                 double lat = protocol.getLat();
                 pst.setDouble(3, lat);
                 double lon = protocol.getLon();
@@ -258,8 +258,8 @@ public class MessageConsumer {
                 sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
                         " time = ?, mile = ?, satellite_num = ?, alarm_time = ?, voltage = ?, miles = ? where device_code = ?";
                 pst = connection.prepareStatement(sql);
-                pst.setInt(1, protocol.getAlarmStatus());
-                pst.setInt(2, protocol.getVehicleStatus());
+                pst.setLong(1, protocol.getAlarmStatus());
+                pst.setLong(2, protocol.getVehicleStatus());
                 pst.setDouble(3, protocol.getLat());
                 pst.setDouble(4, protocol.getLon());
                 pst.setDouble(5, protocol.getSpeed());
@@ -275,8 +275,8 @@ public class MessageConsumer {
                 sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?," +
                         " mile = ?, heartbeat_time = ?, voltage = ?, miles = ? where device_code = ?";
                 pst = connection.prepareStatement(sql);
-                pst.setInt(1, protocol.getAlarmStatus());
-                pst.setInt(2, protocol.getVehicleStatus());
+                pst.setLong(1, protocol.getAlarmStatus());
+                pst.setLong(2, protocol.getVehicleStatus());
                 pst.setDouble(3, protocol.getMile());
                 pst.setString(4, DateFormatUtils.format(protocol.getHeartBeatTime(), "yyMMddHHmmss"));
                 pst.setInt(5, protocol.getVoltage());
@@ -332,8 +332,8 @@ public class MessageConsumer {
         int msgType = protocol.getMsgType();
         if (msgType == DataType.GPS.getValue()) {
             pst.setString(1, protocol.getDeviceCode());
-            pst.setInt(2, protocol.getAlarmStatus());
-            pst.setInt(3, protocol.getVehicleStatus());
+            pst.setLong(2, protocol.getAlarmStatus());
+            pst.setLong(3, protocol.getVehicleStatus());
             pst.setDouble(4, protocol.getLat());
             pst.setDouble(5, protocol.getLon());
             pst.setDouble(6, protocol.getSpeed());
@@ -346,8 +346,8 @@ public class MessageConsumer {
             pst.setInt(12, protocol.getGpsFill());
         } else if (msgType == DataType.ALARM.getValue()) {
             pst.setString(1, protocol.getDeviceCode());
-            pst.setInt(2, protocol.getAlarmStatus());
-            pst.setInt(3, protocol.getVehicleStatus());
+            pst.setLong(2, protocol.getAlarmStatus());
+            pst.setLong(3, protocol.getVehicleStatus());
             pst.setDouble(4, protocol.getLat());
             pst.setDouble(5, protocol.getLon());
             pst.setDouble(6, protocol.getSpeed());

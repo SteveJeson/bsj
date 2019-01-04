@@ -75,10 +75,10 @@ public class Main {
         thread3.setName("HEARTBEEAT");
 
         try {
-            thread.start();
-            Thread.sleep(10000);
-            thread1.start();
-            thread2.start();
+//            thread.start();
+//            Thread.sleep(10000);
+//            thread1.start();
+//            thread2.start();
             thread3.start();
         } catch (Exception e) {
             e.printStackTrace();
