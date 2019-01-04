@@ -110,6 +110,7 @@ public class BsjMessageDecoder {
         String dateStr = DateFormatUtils.format(date, "yyMMddHHmmss");
 //        System.out.println("日期时间 -> " + dateStr);
         protocol.setDateTime(date);
+        protocol.setLocationTime(new Date());
         //GPS信息卫星
         byte[] satNumBytes = ByteUtil.subByteArr(data, 17, 1);
         int satNum = decodeSatelliteNum(satNumBytes);
@@ -169,6 +170,7 @@ public class BsjMessageDecoder {
         String dateStr = DateFormatUtils.format(date, "yyMMddHHmmss");
 //        System.out.println("日期时间 -> " + dateStr);
         protocol.setDateTime(date);
+        protocol.setAlarmTime(new Date());
         //GPS信息长度+卫星数
         byte[] satNumBytes = ByteUtil.subByteArr(data, 17, 1);
         int satNum = decodeSatelliteNum(satNumBytes);
@@ -240,6 +242,7 @@ public class BsjMessageDecoder {
         if (count > 0) {
             decodeExtenData(protocol, data, 16);
         }
+        protocol.setHeartBeatTime(new Date());
         //序列号
         byte[] seq = ByteUtil.subByteArr(data, 16 + count, 2);
 //        System.out.println("序列号 -> " + ByteArrayUtil.toHexString(seq));

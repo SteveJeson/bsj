@@ -108,4 +108,10 @@ public class BsjMessageDecoderTest {
         System.out.println(map.get("gps_2.t_gps_a2_2"));
     }
 
+    @Test
+    public void testTime() {
+        Date date = new Date();
+        System.out.println(DateFormatUtils.format(date, "yyMMddHHmmss"));
+        System.out.println(date);
+    }
 }
