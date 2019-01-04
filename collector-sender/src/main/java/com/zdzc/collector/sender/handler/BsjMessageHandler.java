@@ -186,7 +186,12 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                     ctx.writeAndFlush(Unpooled.buffer().writeBytes(reply.getBytes()));
                 } else if (Command.BSJ_MSG_REPLY.equals(protocolNum)){
                     //处理下发指令回复的信息
-                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
+                    String deviceCode = (String)channelMap.get(channelId);
+                    message = deviceCode + message;
+                    Message msg = new Message();
+                    msg.setSendBody(StringUtil.decodeHexDump(message));
+                    MqSender.send(MqInitializer.bsjReplyChannel, msg, MqInitializer.bsjCmdReplyQueueName);
+//                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
                 }
             }
         }
