@@ -130,10 +130,11 @@ public class MessageConsumer {
             connection = DbConnectionPool.getConnect();
             pst = connection.prepareStatement(sql);
             toSetParams(pst, protocol);
+
             pst.execute();
             pst.close();
         }catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("插入轨迹数据到 " + tbPath, e);
             result = false;
         }finally {
             if(connection != null){
@@ -182,7 +183,6 @@ public class MessageConsumer {
                     pst.addBatch();
                 }
                 pst.executeBatch();
-                System.out.println("=====executed====");
                 pst.close();
                 mapList.clear();
             }catch (Exception e) {
