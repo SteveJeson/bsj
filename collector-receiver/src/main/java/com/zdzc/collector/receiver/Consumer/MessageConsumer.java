@@ -77,23 +77,6 @@ public class MessageConsumer {
             if (tbPath == null) {
                 return false;
             }
-//            if (mapList.containsKey(tbPath)) {
-//                mapList.get(tbPath).add(protocol);
-//            } else {
-//                List<BsjProtocol> list = new ArrayList<>();
-//                mapList.put(tbPath, list);
-//            }
-//
-//            int batchNum = 1;
-//            if (msgType == DataType.GPS.getValue()) {
-//                batchNum = gpsBatchNum;
-//            } else if (msgType == DataType.ALARM.getValue()) {
-//                batchNum = alarmBatchNum;
-//            }
-//            if (index % batchNum != 0) {
-//                return true;
-//            }
-
 
             String columns = "";
             if (msgType == DataType.GPS.getValue()) {
@@ -101,11 +84,7 @@ public class MessageConsumer {
             } else if (msgType == DataType.ALARM.getValue()) {
                 columns = alarmColumns;
             }
-//            if (batchNum <= 1) {
-//                return toSingleConsumer(protocol, columns, tbPath);
-//            } else {
-//                return toBatchConsumer(mapList, columns);
-//            }
+
             return toSingleConsumer(protocol, columns, tbPath);
         }
 
@@ -130,7 +109,7 @@ public class MessageConsumer {
             connection = DbConnectionPool.getConnect();
             pst = connection.prepareStatement(sql);
             toSetParams(pst, protocol);
-
+            logger.info("insert into " + tbPath);
             pst.execute();
             pst.close();
         }catch (Exception e) {
