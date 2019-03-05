@@ -11,7 +11,6 @@ import com.zdzc.collector.common.utils.ByteUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +19,10 @@ import java.util.List;
 
 /**
  * @Author liuwei
- * @Description 部标808解码器类
+ * @Description 部标808解码器类, 暂时弃用
  * @Date 2018/12/14 11:17
  */
+@Deprecated
 public class JtProtocolDecoder extends ByteToMessageDecoder {
 
     private static final Logger logger = LoggerFactory.getLogger(JtProtocolDecoder.class);
