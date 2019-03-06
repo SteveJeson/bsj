@@ -2,6 +2,7 @@
 ### 一、技术框架
 - 核心框架：Netty
 - 消息中间件：RabbitMQ
+
 ### 二、项目模块
 1、核心模块：collector-sender
 - 职责：负责设备数据的接入，并将数据推送到RabbitMQ,以供业务消费使用
