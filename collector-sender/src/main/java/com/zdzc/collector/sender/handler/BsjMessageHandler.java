@@ -1,5 +1,6 @@
 package com.zdzc.collector.sender.handler;
 
+import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.rabbitmq.client.Channel;
 import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
@@ -190,7 +191,7 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                     String deviceCode = (String)channelMap.get(channelId);
                     message = deviceCode + message;
                     Message msg = new Message();
-                    msg.setSendBody(StringUtil.decodeHexDump(message));
+                    msg.setSendBody(ByteArrayUtil.hexStringToByteArray(message));
                     MqSender.send(MqInitializer.bsjReplyChannel, msg, MqInitializer.bsjCmdReplyQueueName);
 //                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
                 }
