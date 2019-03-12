@@ -28,12 +28,12 @@ public class BsjProtocol extends Protocol {
     /**
      * 车辆状态信息
      */
-    private int vehicleStatus;
+    private long vehicleStatus;
 
     /**
      * 报警状态信息
      */
-    private int alarmStatus;
+    private long alarmStatus;
 
     /**
      * 当日里程
@@ -89,19 +89,16 @@ public class BsjProtocol extends Protocol {
         this.signLevel = signLevel;
     }
 
-    public int getVehicleStatus() {
-        return vehicleStatus;
-    }
 
-    public void setVehicleStatus(int vehicleStatus) {
+    public void setVehicleStatus(long vehicleStatus) {
         this.vehicleStatus = vehicleStatus;
     }
 
-    public int getAlarmStatus() {
+    public long getAlarmStatus() {
         return alarmStatus;
     }
 
-    public void setAlarmStatus(int alarmStatus) {
+    public void setAlarmStatus(long alarmStatus) {
         this.alarmStatus = alarmStatus;
     }
 
@@ -151,5 +148,9 @@ public class BsjProtocol extends Protocol {
 
     public void setHeartBeatTime(Date heartBeatTime) {
         this.heartBeatTime = heartBeatTime;
+    }
+
+    public long getVehicleStatus() {
+        return vehicleStatus;
     }
 }

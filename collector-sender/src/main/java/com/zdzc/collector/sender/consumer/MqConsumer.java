@@ -1,5 +1,6 @@
 package com.zdzc.collector.sender.consumer;
 
+import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.Channel;
 import com.zdzc.collector.common.jconst.SysConst;
@@ -39,9 +40,8 @@ public class MqConsumer {
                 if (info.length > 1) {
                     io.netty.channel.Channel channel1 = (io.netty.channel.Channel) BsjMessageHandler.channelMap.get(info[0]);
                     if (channel1 != null){
-                        logger.info("send to client: " + info[0] + "--------- msg: " + info[1] );
-//                        channel1.writeAndFlush(Unpooled.buffer().writeBytes(info[1].getBytes()));
-                        channel1.writeAndFlush(info[1]);
+                      channel1.writeAndFlush(Unpooled.buffer().writeBytes(ByteArrayUtil.hexStringToByteArray(info[1])));
+                      logger.info("sent to client: " + info[0] + "--------- msg: " + info[1] );
                     }else {
                         logger.error("未找到该设备号对应的通道：" + info[0]);
                     }

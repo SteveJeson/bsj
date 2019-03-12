@@ -2,3 +2,4 @@
 collector.iml
 target/
 
+collector-receiver/collector-receiver.iml

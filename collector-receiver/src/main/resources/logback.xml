@@ -6,7 +6,7 @@
     <contextName>logback</contextName>
 
     <!--输出sql语句-->
-    <logger name="com.zdzc.collector" level="debug"/>
+    <logger name="com.zdzc.collector" level="info"/>
     <property name="path" value="/Logs/collector/receiver"></property>
     <property name="maxHistory" value="30"/>
     <property name="maxFileSize" value="50MB"/>
@@ -110,7 +110,7 @@
 
     <root>
         <level value="info"/>
-        <appender-ref ref="console"/>
+        <!--<appender-ref ref="console"/>-->
         <appender-ref ref="debug_file"/>
         <appender-ref ref="info_file"/>
         <appender-ref ref="warn_file"/>

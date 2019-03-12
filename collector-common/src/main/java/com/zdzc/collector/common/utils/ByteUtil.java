@@ -4,6 +4,8 @@ import com.zdzc.collector.common.jconst.SysConst;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang.StringUtils;
 
+import java.nio.ByteBuffer;
+
 /**
  * @Author liuwei
  * @Description 字节处理工具类
@@ -272,5 +274,22 @@ public class ByteUtil {
         String binAddr = Integer.toBinaryString(Integer.parseInt(hexstr, 16));
         String str = StringUtils.leftPad(binAddr, 16, '0');
         return StringUtils.reverse(str);
+    }
+
+    /**
+     * byte数组转long
+     * @author liuwei
+     * @return
+     * @exception
+     * @date 2019/1/4 16:20
+     */
+    public static long longFrom8Bytes(byte[] input, int offset, boolean littleEndian){
+        long value=0;
+        // 循环读取每个字节通过移位运算完成long的8个字节拼装
+        for(int  count=0;count<8;++count){
+            int shift=(littleEndian?count:(7-count))<<3;
+            value |=((long)0xff<< shift) & ((long)input[offset+count] << shift);
+        }
+        return value;
     }
 }

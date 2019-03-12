@@ -1,17 +1,14 @@
 package com.zdzc.collector.sender.coder;
 
-import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
 import com.zdzc.collector.common.jenum.ProtocolSign;
 import com.zdzc.collector.common.jenum.ProtocolType;
 import com.zdzc.collector.common.packet.Header;
 import com.zdzc.collector.common.packet.Message;
 import com.zdzc.collector.common.utils.CrcItu16;
-import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.CRC16;
 
 import java.util.Arrays;
 

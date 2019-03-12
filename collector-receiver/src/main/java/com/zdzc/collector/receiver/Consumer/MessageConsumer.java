@@ -77,23 +77,6 @@ public class MessageConsumer {
             if (tbPath == null) {
                 return false;
             }
-//            if (mapList.containsKey(tbPath)) {
-//                mapList.get(tbPath).add(protocol);
-//            } else {
-//                List<BsjProtocol> list = new ArrayList<>();
-//                mapList.put(tbPath, list);
-//            }
-//
-//            int batchNum = 1;
-//            if (msgType == DataType.GPS.getValue()) {
-//                batchNum = gpsBatchNum;
-//            } else if (msgType == DataType.ALARM.getValue()) {
-//                batchNum = alarmBatchNum;
-//            }
-//            if (index % batchNum != 0) {
-//                return true;
-//            }
-
 
             String columns = "";
             if (msgType == DataType.GPS.getValue()) {
@@ -101,11 +84,7 @@ public class MessageConsumer {
             } else if (msgType == DataType.ALARM.getValue()) {
                 columns = alarmColumns;
             }
-//            if (batchNum <= 1) {
-//                return toSingleConsumer(protocol, columns, tbPath);
-//            } else {
-//                return toBatchConsumer(mapList, columns);
-//            }
+
             return toSingleConsumer(protocol, columns, tbPath);
         }
 
@@ -130,10 +109,11 @@ public class MessageConsumer {
             connection = DbConnectionPool.getConnect();
             pst = connection.prepareStatement(sql);
             toSetParams(pst, protocol);
+            logger.info("insert into " + tbPath);
             pst.execute();
             pst.close();
         }catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("插入轨迹数据到 " + tbPath, e);
             result = false;
         }finally {
             if(connection != null){
@@ -160,7 +140,7 @@ public class MessageConsumer {
         for (Map.Entry<String, List<BsjProtocol>> entry : mapList.entrySet()) {
             String tbPath = entry.getKey();
             List<BsjProtocol> protocols = entry.getValue();
-            logger.debug("tbpath -> {}", tbPath);
+//            logger.debug("tbpath -> {}", tbPath);
             int strLen = columns.split(",").length;
             //占位符
             StringBuilder builder = new StringBuilder();
@@ -182,7 +162,6 @@ public class MessageConsumer {
                     pst.addBatch();
                 }
                 pst.executeBatch();
-                System.out.println("=====executed====");
                 pst.close();
                 mapList.clear();
             }catch (Exception e) {
@@ -228,10 +207,10 @@ public class MessageConsumer {
                 sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
                         " time = ?, mile = ?, satellite_num = ?, location_time = ?, voltage = ?, miles = ? where device_code = ?";
                 pst = connection.prepareStatement(sql);
-                int alarmStatus = protocol.getAlarmStatus();
-                pst.setInt(1, alarmStatus);
-                int vehicleStatus = protocol.getVehicleStatus();
-                pst.setInt(2, vehicleStatus);
+                long alarmStatus = protocol.getAlarmStatus();
+                pst.setLong(1, alarmStatus);
+                long vehicleStatus = protocol.getVehicleStatus();
+                pst.setLong(2, vehicleStatus);
                 double lat = protocol.getLat();
                 pst.setDouble(3, lat);
                 double lon = protocol.getLon();
@@ -258,8 +237,8 @@ public class MessageConsumer {
                 sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?, lat = ?, lon = ?, speed = ?, direction = ?," +
                         " time = ?, mile = ?, satellite_num = ?, alarm_time = ?, voltage = ?, miles = ? where device_code = ?";
                 pst = connection.prepareStatement(sql);
-                pst.setInt(1, protocol.getAlarmStatus());
-                pst.setInt(2, protocol.getVehicleStatus());
+                pst.setLong(1, protocol.getAlarmStatus());
+                pst.setLong(2, protocol.getVehicleStatus());
                 pst.setDouble(3, protocol.getLat());
                 pst.setDouble(4, protocol.getLon());
                 pst.setDouble(5, protocol.getSpeed());
@@ -275,8 +254,8 @@ public class MessageConsumer {
                 sql = "UPDATE GPS_MAIN.T_GPS_SNAPSHOT SET alarm_status = ?, vehicle_status = ?," +
                         " mile = ?, heartbeat_time = ?, voltage = ?, miles = ? where device_code = ?";
                 pst = connection.prepareStatement(sql);
-                pst.setInt(1, protocol.getAlarmStatus());
-                pst.setInt(2, protocol.getVehicleStatus());
+                pst.setLong(1, protocol.getAlarmStatus());
+                pst.setLong(2, protocol.getVehicleStatus());
                 pst.setDouble(3, protocol.getMile());
                 pst.setString(4, DateFormatUtils.format(protocol.getHeartBeatTime(), "yyMMddHHmmss"));
                 pst.setInt(5, protocol.getVoltage());
@@ -332,8 +311,8 @@ public class MessageConsumer {
         int msgType = protocol.getMsgType();
         if (msgType == DataType.GPS.getValue()) {
             pst.setString(1, protocol.getDeviceCode());
-            pst.setInt(2, protocol.getAlarmStatus());
-            pst.setInt(3, protocol.getVehicleStatus());
+            pst.setLong(2, protocol.getAlarmStatus());
+            pst.setLong(3, protocol.getVehicleStatus());
             pst.setDouble(4, protocol.getLat());
             pst.setDouble(5, protocol.getLon());
             pst.setDouble(6, protocol.getSpeed());
@@ -346,8 +325,8 @@ public class MessageConsumer {
             pst.setInt(12, protocol.getGpsFill());
         } else if (msgType == DataType.ALARM.getValue()) {
             pst.setString(1, protocol.getDeviceCode());
-            pst.setInt(2, protocol.getAlarmStatus());
-            pst.setInt(3, protocol.getVehicleStatus());
+            pst.setLong(2, protocol.getAlarmStatus());
+            pst.setLong(3, protocol.getVehicleStatus());
             pst.setDouble(4, protocol.getLat());
             pst.setDouble(5, protocol.getLon());
             pst.setDouble(6, protocol.getSpeed());

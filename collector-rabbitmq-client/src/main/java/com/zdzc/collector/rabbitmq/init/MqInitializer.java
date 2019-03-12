@@ -268,7 +268,9 @@ public class MqInitializer {
         bsjHeartbeatChannel = heartbeatConnection.createChannel();
         bsjHeartbeatChannel.queueDeclare(bsjHeartbeatQueueName, true, false, false, null);
         //下发消息回复
-        createQueues(factory.newConnection(), bsjCmdReplyQueueName, bsjReplyChannel);
+        Connection replyConnection = factory.newConnection();
+        bsjReplyChannel = replyConnection.createChannel();
+        bsjReplyChannel.queueDeclare(bsjCmdReplyQueueName, true, false, false, null);
     }
 
     /**

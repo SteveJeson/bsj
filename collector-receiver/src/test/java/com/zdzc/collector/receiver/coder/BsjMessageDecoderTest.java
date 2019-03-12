@@ -1,6 +1,7 @@
 package com.zdzc.collector.receiver.coder;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.mysql.jdbc.ByteArrayRow;
 import com.sun.org.apache.xerces.internal.impl.io.ASCIIReader;
 import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.common.utils.DateUtil;
@@ -113,5 +114,29 @@ public class BsjMessageDecoderTest {
         Date date = new Date();
         System.out.println(DateFormatUtils.format(date, "yyMMddHHmmss"));
         System.out.println(date);
+    }
+
+    @Test
+    public void decodeHeartBeat() {
+        String src = "0300000133500068693A130006030002000C00B289860116842306068062000600C7FFFFFFEA000600C8FFFFFFFF000A00C90000171000001710000400CA0D981063C286";
+        BsjProtocol protocol = new BsjProtocol();
+        byte[] data = ByteArrayUtil.hexStringToByteArray(src);
+        BsjMessageDecoder.decodeHeartBeat(protocol, data);
+    }
+
+    @Test
+    public void decodeLocation() {
+        String src = "030000013350006869522213010407332DC00340C6C80CE1785000000001CC0136130078C5010700000C00B289860116842306068062000600C7FFFFFFCE000600C8FFFFFFFB000A00C90000171000001710000400CA005910684CC4";
+        BsjProtocol protocol = new BsjProtocol();
+        byte[] data = ByteArrayUtil.hexStringToByteArray(src);
+        BsjMessageDecoder.decodeLocation(protocol, data);
+    }
+
+    @Test
+    public void decodeAlarm() {
+        String src = "030000013350006869552613010407332AC00340C6C80CE178500000000801CC0136130078C50000030002000C00B289860116842306068062000600C7FFFFFFEE000600C8FFFFFFFB000A00C90000171000001710000400CA00901066649C";
+        BsjProtocol protocol = new BsjProtocol();
+        byte[] data = ByteArrayUtil.hexStringToByteArray(src);
+        BsjMessageDecoder.decodeAlarm(protocol, data);
     }
 }
