@@ -140,7 +140,7 @@ public class MessageConsumer {
         for (Map.Entry<String, List<BsjProtocol>> entry : mapList.entrySet()) {
             String tbPath = entry.getKey();
             List<BsjProtocol> protocols = entry.getValue();
-            logger.debug("tbpath -> {}", tbPath);
+//            logger.debug("tbpath -> {}", tbPath);
             int strLen = columns.split(",").length;
             //占位符
             StringBuilder builder = new StringBuilder();
