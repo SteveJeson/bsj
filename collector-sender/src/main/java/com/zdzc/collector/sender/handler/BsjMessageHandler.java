@@ -188,7 +188,8 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                 } else if (Command.BSJ_MSG_REPLY.equals(protocolNum)){
                     //处理下发指令回复的信息
                     String deviceCode = (String)channelMap.get(channelId);
-                    message = deviceCode + message;
+                    logger.info("deviceCode: ------> " + deviceCode);
+                    message = deviceCode + "," + message;
                     Message msg = new Message();
                     msg.setSendBody(StringUtil.decodeHexDump(message));
                     MqSender.send(MqInitializer.bsjReplyChannel, msg, MqInitializer.bsjCmdReplyQueueName);
