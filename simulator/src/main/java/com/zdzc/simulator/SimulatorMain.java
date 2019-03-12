@@ -14,7 +14,7 @@ import java.net.Socket;
 public class SimulatorMain {
     public static void main(String[] args) throws Exception {
         Config.use("application.properties");
-        SimulatorClientPoolManager.init("192.168.1.53", 10003, Integer.valueOf(Config.get("connections.number")));
+        SimulatorClientPoolManager.init("47.97.10.221", 10005, Integer.valueOf(Config.get("connections.number")));
 //        for (int i = 1; i <= 10; i++){
 //            SimulatorClientPoolManager.send(generateMsg(i), null);
 //            Thread.sleep(10000);

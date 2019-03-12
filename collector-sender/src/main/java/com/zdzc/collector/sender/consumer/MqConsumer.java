@@ -33,13 +33,15 @@ public class MqConsumer {
         Consumer consumer = new DefaultConsumer(channel){
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                super.handleDelivery(consumerTag, envelope, properties, body);
-                String message = new String(SysConst.DEFAULT_ENCODING);
+                String message = new String(body, SysConst.DEFAULT_ENCODING);
+                logger.info("received from mq: " + message);
                 String[] info = message.split(",");
                 if (info.length > 1) {
                     io.netty.channel.Channel channel1 = (io.netty.channel.Channel) BsjMessageHandler.channelMap.get(info[0]);
                     if (channel1 != null){
-                        channel1.writeAndFlush(Unpooled.buffer().writeBytes(info[1].getBytes()));
+                        logger.info("send to client: " + info[0] + "--------- msg: " + info[1] );
+//                        channel1.writeAndFlush(Unpooled.buffer().writeBytes(info[1].getBytes()));
+                        channel1.writeAndFlush(info[1]);
                     }else {
                         logger.error("未找到该设备号对应的通道：" + info[0]);
                     }
