@@ -1,6 +1,8 @@
+import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.tcpclient.core.ClientPoolManager;
+import io.netty.util.CharsetUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,5 +26,15 @@ public class SenderTests {
             ClientPoolManager.init("192.168.1.161", 10000, 100);
             ClientPoolManager.channelPool.acquire().sync().get();
         }
+    }
+
+    @Test
+    public void testBsj() {
+        String a = "787814800C0000000156455253494F4E23000103B677DF0D0A";
+        byte[] b = ByteArrayUtil.hexStringToByteArray(a);
+        String hex = ByteArrayUtil.toHexString(b);
+        byte[] r = hex.getBytes(CharsetUtil.UTF_8);
+        System.out.println(b);
+        System.out.println(r);
     }
 }

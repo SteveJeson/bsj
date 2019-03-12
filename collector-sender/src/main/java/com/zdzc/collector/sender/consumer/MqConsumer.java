@@ -1,5 +1,6 @@
 package com.zdzc.collector.sender.consumer;
 
+import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.Channel;
 import com.zdzc.collector.common.jconst.SysConst;
@@ -33,13 +34,14 @@ public class MqConsumer {
         Consumer consumer = new DefaultConsumer(channel){
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                super.handleDelivery(consumerTag, envelope, properties, body);
-                String message = new String(SysConst.DEFAULT_ENCODING);
+                String message = new String(body, SysConst.DEFAULT_ENCODING);
+                logger.info("received from mq: " + message);
                 String[] info = message.split(",");
                 if (info.length > 1) {
                     io.netty.channel.Channel channel1 = (io.netty.channel.Channel) BsjMessageHandler.channelMap.get(info[0]);
                     if (channel1 != null){
-                        channel1.writeAndFlush(Unpooled.buffer().writeBytes(info[1].getBytes()));
+                      channel1.writeAndFlush(Unpooled.buffer().writeBytes(ByteArrayUtil.hexStringToByteArray(info[1])));
+                      logger.info("sent to client: " + info[0] + "--------- msg: " + info[1] );
                     }else {
                         logger.error("未找到该设备号对应的通道：" + info[0]);
                     }

@@ -1,5 +1,6 @@
 package com.zdzc.collector.sender.handler;
 
+import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.rabbitmq.client.Channel;
 import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.jconst.Command;
@@ -44,7 +45,7 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         byte[] arr = (byte[]) msg;
         String hexStr = StringUtil.toHexStringPadded(arr).toUpperCase();
-//        System.out.println("source: " + hexStr);
+        logger.info("source: " + hexStr);
         String channelId = ctx.channel().id().toString();
         if (hexStr != null && hexStr.startsWith(ProtocolSign.BSJ_BEGINMARK.getValue())
                 && hexStr.endsWith(ProtocolSign.BSJ_ENDMARK.getValue())
@@ -170,12 +171,13 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                     }
                     sendToMq(message, channelId, MqInitializer.bsjLoginChannel, MqInitializer.bsjLoginQueueName);
                     String reply = generateReply(Command.BSJ_MSG_LOGIN, serialNum);
-                    ctx.writeAndFlush(Unpooled.buffer().writeBytes(reply.getBytes()));
+                    logger.info("login reply:" + reply);
+                    ctx.writeAndFlush(Unpooled.buffer().writeBytes(StringUtil.decodeHexDump(reply)));
                 } else if (Command.BSJ_MSG_HEARTBEAT.equals(protocolNum)){
                     //处理心跳信息
                     sendToMq(message, channelId, MqInitializer.bsjHeartbeatChannel, MqInitializer.bsjHeartbeatQueueName);
                     String reply = generateReply(Command.BSJ_MSG_HEARTBEAT, serialNum);
-                    ctx.writeAndFlush(Unpooled.buffer().writeBytes(reply.getBytes()));
+                    ctx.writeAndFlush(Unpooled.buffer().writeBytes(StringUtil.decodeHexDump(reply)));
                 } else if (Command.BSJ_MSG_LOCATION.equals(protocolNum)){
                     //处理位置信息
                     sendToMq(message, channelId, MqInitializer.bsjLocationChannel, MqInitializer.bsjLocationQueueName);
@@ -183,10 +185,15 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                     //处理报警信息
                     sendToMq(message, channelId, MqInitializer.bsjAlarmChannel, MqInitializer.bsjAlarmQueueName);
                     String reply = generateReply(Command.BSJ_MSG_ALARM, serialNum);
-                    ctx.writeAndFlush(Unpooled.buffer().writeBytes(reply.getBytes()));
+                    ctx.writeAndFlush(Unpooled.buffer().writeBytes(StringUtil.decodeHexDump(reply)));
                 } else if (Command.BSJ_MSG_REPLY.equals(protocolNum)){
                     //处理下发指令回复的信息
-                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
+                    String deviceCode = (String)channelMap.get(channelId);
+                    message = deviceCode + message;
+                    Message msg = new Message();
+                    msg.setSendBody(ByteArrayUtil.hexStringToByteArray(message));
+                    MqSender.send(MqInitializer.bsjReplyChannel, msg, MqInitializer.bsjCmdReplyQueueName);
+//                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
                 }
             }
         }
