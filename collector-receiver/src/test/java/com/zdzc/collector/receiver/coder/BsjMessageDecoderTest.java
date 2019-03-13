@@ -118,10 +118,9 @@ public class BsjMessageDecoderTest {
 
     @Test
     public void decodeHeartBeat() {
-        String src = "0300000133500068693A130006030002000C00B289860116842306068062000600C7FFFFFFEA000600C8FFFFFFFF000A00C90000171000001710000400CA0D981063C286";
-        BsjProtocol protocol = new BsjProtocol();
+        String src = "0300000133500068693a130000030002000c00b289860430111890028268000600c7fffffffa000600c8ffffffff000a00c90000000000001710000400ca006f1026c57c";
         byte[] data = ByteArrayUtil.hexStringToByteArray(src);
-        BsjMessageDecoder.decodeHeartBeat(protocol, data);
+        BsjMessageDecoder.decode(data);
     }
 
     @Test

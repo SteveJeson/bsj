@@ -265,7 +265,7 @@ public class MessageConsumer {
             pst.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error(e.getMessage());
+            logger.error("更新快照表", e);
         } finally {
             closeConnection(pst, connection);
         }
