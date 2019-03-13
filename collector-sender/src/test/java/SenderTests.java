@@ -3,6 +3,8 @@ import com.zdzc.collector.common.coder.MsgDecoder;
 import com.zdzc.collector.common.utils.ByteUtil;
 import com.zdzc.collector.tcpclient.core.ClientPoolManager;
 import io.netty.util.CharsetUtil;
+import io.netty.util.internal.StringUtil;
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,11 +32,17 @@ public class SenderTests {
 
     @Test
     public void testBsj() {
-        String a = "787814800C0000000156455253494F4E23000103B677DF0D0A";
-        byte[] b = ByteArrayUtil.hexStringToByteArray(a);
-        String hex = ByteArrayUtil.toHexString(b);
-        byte[] r = hex.getBytes(CharsetUtil.UTF_8);
-        System.out.println(b);
-        System.out.println(r);
+        String a = "000001335000686978783a130006030002000c00b289860430111890028268000600c7fffffffb000600c8ffffffff000a00c90000171000001710000400ca07ff10586bab0d0a";
+        String hex = StringUtil.toHexStringPadded(ByteArrayUtil.hexStringToByteArray(a));
+        System.out.println(hex);
+    }
+
+    @Test
+    public void testMap() {
+        ConcurrentHashMap<String, Object> channelMap = new ConcurrentHashMap<>();
+        channelMap.put("a", "b");
+        System.out.println(channelMap.get("a"));
+        channelMap.put("a", "c");
+        System.out.println(channelMap.get("a"));
     }
 }

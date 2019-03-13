@@ -161,14 +161,14 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                 if (Command.BSJ_MSG_LOGIN.equals(protocolNum)){
                     //对于新登录的设备，服务器会维护两个channelId, 设备id的对应关系表
                     String deviceCode = message.substring(8 ,24);
-                    if(!channelMap.containsKey(deviceCode)){
+//                    if(!channelMap.containsKey(deviceCode)){
                         channelMap.put(deviceCode, ctx.channel());
 //                        logger.info("saved key value -> {} : {}", deviceCode, channelId);
-                    }
-                    if(!channelMap.containsKey(channelId)){
+//                    }
+//                    if(!channelMap.containsKey(channelId)){
                         channelMap.put(channelId, deviceCode);
 //                        logger.info("saved key value -> {} : {}", channelId, deviceCode);
-                    }
+//                    }
                     sendToMq(message, channelId, MqInitializer.bsjLoginChannel, MqInitializer.bsjLoginQueueName);
                     String reply = generateReply(Command.BSJ_MSG_LOGIN, serialNum);
                     logger.info("login reply:" + reply);
