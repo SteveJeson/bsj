@@ -188,13 +188,13 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
                     ctx.writeAndFlush(Unpooled.buffer().writeBytes(StringUtil.decodeHexDump(reply)));
                 } else if (Command.BSJ_MSG_REPLY.equals(protocolNum)){
                     //处理下发指令回复的信息
-//                    String deviceCode = (String)channelMap.get(channelId);
-//                    logger.info("send to mq, deviceCode: ------> " + deviceCode);
-//                    message = deviceCode + message;
-//                    Message msg = new Message();
-//                    msg.setSendBody(ByteArrayUtil.hexStringToByteArray(message));
-//                    MqSender.send(MqInitializer.bsjReplyChannel, msg, MqInitializer.bsjCmdReplyQueueName);
-                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
+                    String deviceCode = (String)channelMap.get(channelId);
+                    logger.info("send to mq, deviceCode: ------> " + deviceCode);
+                    message = deviceCode + message;
+                    Message msg = new Message();
+                    msg.setSendBody(ByteArrayUtil.hexStringToByteArray(message));
+                    MqSender.send(MqInitializer.bsjReplyChannel, msg, MqInitializer.bsjCmdReplyQueueName);
+//                    sendToMq(message, channelId, MqInitializer.bsjReplyChannel, MqInitializer.bsjCmdReplyQueueName);
                 }
             }
         }
@@ -202,7 +202,7 @@ public class BsjMessageHandler extends ChannelInboundHandlerAdapter{
 
     private void sendToMq(String message, String channelId, Channel mqChannel, String queueName){
         String deviceCode = (String)channelMap.get(channelId);
-        String mqMessage = deviceCode + message;
+        String mqMessage = ProtocolType.BSJ.getValue() + deviceCode + message.substring(4, message.length() - 4);
         Message msg = new Message();
         msg.setSendBody(StringUtil.decodeHexDump(mqMessage));
         MqSender.send(mqChannel, msg, queueName);
